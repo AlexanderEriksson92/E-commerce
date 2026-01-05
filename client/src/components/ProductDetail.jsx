@@ -1,36 +1,71 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
-function ProductDetail() {
-  const { id } = useParams();
+function ProductDetail({ onAddToCart }) {
+  const { id } = useParams(); // Hämtar ID från URL:en
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Hämtar den specifika produkten från din backend
     fetch(`http://localhost:5000/api/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setProduct(data);
         setLoading(false);
       })
-      .catch(err => console.error(err));
+      .catch((err) => {
+        console.error("Fel vid hämtning av produktdetaljer:", err);
+        setLoading(false);
+      });
   }, [id]);
 
-  if (loading) return <p>Laddar produkt...</p>;
-  if (!product) return <p>Produkten hittades inte!</p>;
+  if (loading) return <div style={{ padding: '20px' }}>Laddar produkt...</div>;
+  if (!product) return <div style={{ padding: '20px' }}>Produkten hittades inte!</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <Link to="/">← Tillbaka till listan</Link>
-      <div style={{ display: 'flex', gap: '40px', marginTop: '20px' }}>
-        <div style={{ width: '300px', height: '300px', background: '#eee', borderRadius: '8px' }}>
-           <p style={{ textAlign: 'center', paddingTop: '130px' }}>Bild kommer här</p>
+    <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
+      <Link to="/" style={{ textDecoration: 'none', color: '#007bff' }}>← Tillbaka till listan</Link>
+      
+      <div style={{ display: 'flex', gap: '40px', marginTop: '20px', alignItems: 'flex-start' }}>
+        {/* Placeholder för bild */}
+        <div style={{ 
+          width: '350px', 
+          height: '350px', 
+          backgroundColor: '#f0f0f0', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          borderRadius: '8px',
+          fontSize: '14px',
+          color: '#888',
+          border: '1px solid #ddd'
+        }}>
+          Bild kommer snart
         </div>
-        <div>
-          <h1>{product.name}</h1>
-          <p style={{ fontSize: '1.2rem', color: '#666' }}>{product.description}</p>
-          <h2 style={{ color: '#28a745' }}>{product.price} kr</h2>
-          <button style={{ padding: '10px 20px', cursor: 'pointer' }}>Lägg i kundvagn</button>
+
+        <div style={{ flex: 1 }}>
+          <h1 style={{ margin: '0 0 10px 0' }}>{product.name}</h1>
+          <p style={{ fontSize: '18px', color: '#444', lineHeight: '1.6' }}>
+            {product.description}
+          </p>
+          <h2 style={{ color: '#28a745', margin: '20px 0' }}>{product.price} kr</h2>
+
+          <button 
+            onClick={() => onAddToCart(product)}
+            style={{ 
+              backgroundColor: '#28a745', 
+              color: 'white', 
+              border: 'none', 
+              padding: '12px 25px', 
+              fontSize: '16px', 
+              borderRadius: '5px', 
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Lägg i kundkorg
+          </button>
         </div>
       </div>
     </div>
