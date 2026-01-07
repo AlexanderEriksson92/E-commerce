@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// Vi måste ta emot onAddToCart som en "prop" här i parentesen
-function ProductList({ onAddToCart }) { 
+function ProductList({ onAddToCart }) {
   const [products, setProducts] = useState([]);
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
     fetch('http://localhost:5000/api/products')
@@ -12,33 +12,68 @@ function ProductList({ onAddToCart }) {
       .catch(err => console.error("Fetch-fel:", err));
   }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Vill du verkligen ta bort denna produkt?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': localStorage.getItem('token') }
+      });
+
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== id));
+      }
+    } catch (err) {
+      console.error("Kunde inte radera:", err);
+    }
+  };
+
   return (
-    <div className="product-grid" style={{ display: 'flex', gap: '20px', padding: '20px', flexWrap: 'wrap' }}>
-      {products.map(product => (
-        <div key={product.id} className="product-card" style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', width: '200px' }}>
-          <h3>{product.name}</h3>
-          <p>{product.price} kr</p>
-          
-          <Link to={`/product/${product.id}`} style={{ color: '#007bff' }}>Visa detaljer</Link>
-          <br />
-          
-          {/* Här kopplar vi funktionen till knappen! */}
-          <button 
-            onClick={() => onAddToCart(product)} 
-            style={{ 
-              marginTop: '10px', 
-              backgroundColor: '#28a745', 
-              color: 'white', 
-              border: 'none', 
-              padding: '8px 12px', 
-              borderRadius: '4px', 
-              cursor: 'pointer' 
-            }}
-          >
-            Lägg i kundkorg
-          </button>
-        </div>
-      ))}
+    <div className="container">
+      <h2 style={{ textAlign: 'center', margin: '30px 0' }}>Våra Produkter</h2>
+      
+      <div className="product-grid">
+        {products.map(product => (
+          <div key={product.id} className="product-card">
+            <img 
+              src={product.imageUrl?.startsWith('http') 
+                ? product.imageUrl 
+                : `http://localhost:5000${product.imageUrl}`} 
+              alt={product.name} 
+              onError={(e) => { e.target.src = 'https://placehold.co/200x150?text=Bild+saknas'; }}
+            />
+
+            <h3>{product.name}</h3>
+            <p className="price">{product.price} kr</p>
+            
+            <Link to={`/product/${product.id}`} className="details-link">Visa detaljer →</Link>
+
+            <button 
+              className="btn btn-primary" 
+              onClick={() => onAddToCart(product)}
+              style={{ width: '100%', marginTop: '10px' }}
+            >
+              Lägg i kundvagn
+            </button>
+
+            {isAdmin && (
+              <div className="button-group">
+                <Link to={`/edit/${product.id}`} className="btn btn-warning" style={{ flex: 1, textAlign: 'center', textDecoration: 'none', fontSize: '14px' }}>
+                  Redigera
+                </Link>
+                <button 
+                  onClick={() => handleDelete(product.id)}
+                  className="btn btn-danger"
+                  style={{ flex: 1, fontSize: '14px' }}
+                >
+                  Radera
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// Fix för IPv4-nätverk (viktigt för anslutning till vissa molntjänster)
 const dns = require('node:dns');
 dns.setDefaultResultOrder('ipv4first');
 
@@ -7,26 +6,47 @@ const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/db');
 const productRoutes = require('./routes/productRoutes');
-
+const authRoutes = require('./routes/authRoutes');
+const User = require('./models/User'); // Behövs för admin-skapandet
+const bcrypt = require('bcrypt');
+const path = require('path');
 const app = express();
 
-// Middleware
-app.use(cors());             // Tillåter frontenden att prata med backenden
-app.use(express.json());     // Gör att vi kan läsa JSON-data i anrop
+// Middleware - MÅSTE ligga före rutter
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Använd våra produkt-rutter
-// Detta betyder att alla rutter i productRoutes börjar på /api/products
+// Rutter
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
-// Starta servern och anslut till databasen
+// Funktion för att skapa admin automatiskt om den inte finns
+async function createFirstAdmin() {
+  try {
+    const existingAdmin = await User.findOne({ where: { username: 'admin' } });
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await User.create({ 
+        username: 'admin', 
+        password: hashedPassword, 
+        isAdmin: true 
+      });
+      console.log("✅ Admin-konto skapat: admin / admin123");
+    }
+  } catch (err) {
+    console.log("Admin fanns redan eller kunde inte skapas.");
+  }
+}
+
+// Starta servern
 const startServer = async () => {
   try {
-    // Kontrollera att anslutningen fungerar
     await sequelize.authenticate();
-    console.log('✅ Ansluten till Supabase-databasen!');
+    console.log('✅ Ansluten till databasen!');
 
-    // Synka modeller med databasen (skapar tabeller om de inte finns)
     await sequelize.sync();
+    await createFirstAdmin(); // Skapar admin vid varje start om den saknas
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

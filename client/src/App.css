@@ -1,67 +1,164 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* 1. RESET - Detta tar bort Vites konstiga centrering */
+:root {
+  --primary: #28a745;
+  --primary-hover: #218838;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --dark: #343a40;
+  --light: #f8f9fa;
+  --shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+* {
+  box-sizing: border-box;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.product-card {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  background: #fff;
+body {
+  margin: 0;
+  padding: 0;
+  display: block !important; /* Tvingar bort Vites centrering */
+  font-family: 'Inter', sans-serif;
+  background-color: #f0f2f5;
   color: #333;
 }
 
-.product-card button {
-  background-color: #28a745;
-  color: white;
+/* 2. LAYOUT */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 3. PRODUKT-GRID */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 30px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-card h3 {
+  margin: 15px 0 5px 0;
+  font-size: 1.2rem;
+}
+
+.price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 15px;
+}
+
+/* 4. FORMULÄR (Login, Add, Edit) */
+.form-card {
+  background: white;
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+input, textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+}
+
+/* 5. KNAPPAR */
+.btn {
+  padding: 12px 20px;
   border: none;
-  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
-  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: #212529;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* 6. NAVBAR (Om du har en) */
+nav {
+  background: var(--dark);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
 }
