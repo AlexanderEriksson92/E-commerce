@@ -9,6 +9,8 @@ function EditProduct() {
     name: '',
     price: '',
     description: '',
+    category: '',
+    brand: '',
     imageUrl: ''
   });
   const [imageFile, setImageFile] = useState(null);
@@ -42,6 +44,8 @@ function EditProduct() {
     data.append('name', formData.name);
     data.append('price', formData.price);
     data.append('description', formData.description);
+    data.append('category', formData.category);
+    data.append('brand', formData.brand);
     
     if (imageFile) {
       data.append('imageFile', imageFile);
@@ -61,7 +65,7 @@ function EditProduct() {
         navigate('/');
       }
     } catch (err) {
-      alert("Kunde inte spara.");
+      alert("Kunde inte spara ändringar.");
     }
   };
 
@@ -70,8 +74,7 @@ function EditProduct() {
   return (
     <div className="container">
       <div className="form-card">
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Redigera produkt</h2>
-        
+        <h2 style={{ textAlign: 'center' }}>Redigera produkt</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Produktnamn</label>
@@ -81,6 +84,30 @@ function EditProduct() {
               onChange={e => setFormData({...formData, name: e.target.value})} 
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Märke</label>
+            <input 
+              type="text" 
+              value={formData.brand || ''} 
+              onChange={e => setFormData({...formData, brand: e.target.value})} 
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Kategori</label>
+            <select 
+              value={formData.category || ''} 
+              onChange={e => setFormData({...formData, category: e.target.value})}
+              required
+            >
+              <option value="">Välj kategori</option>
+              <option value="Jeans">Jeans</option>
+              <option value="Tröjor">Tröjor</option>
+              <option value="Accessoarer">Accessoarer</option>
+              <option value="Skor">Skor</option>
+            </select>
           </div>
 
           <div className="form-group">
@@ -96,7 +123,7 @@ function EditProduct() {
           <div className="form-group">
             <label>Beskrivning</label>
             <textarea 
-              style={{ height: '120px' }}
+              style={{ height: '100px' }}
               value={formData.description} 
               onChange={e => setFormData({...formData, description: e.target.value})} 
               required
@@ -104,24 +131,16 @@ function EditProduct() {
           </div>
 
           <div className="form-group" style={{ textAlign: 'center' }}>
-            <label>Produktbild</label>
-            <div style={{ marginBottom: '15px' }}>
-              <img 
-                src={preview} 
-                alt="Förhandsvisning" 
-                style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
-              />
+            <label>Bild</label>
+            <div style={{ marginBottom: '10px' }}>
+              <img src={preview} alt="Preview" style={{ width: '120px', borderRadius: '8px', border: '1px solid #ddd' }} />
             </div>
-            <input type="file" accept="image/*" onChange={handleFileChange} />
+            <input type="file" onChange={handleFileChange} />
           </div>
 
           <div className="button-group">
-            <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/')}>
-              Avbryt
-            </button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-              Spara ändringar
-            </button>
+            <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/')}>Avbryt</button>
+            <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>Spara ändringar</button>
           </div>
         </form>
       </div>

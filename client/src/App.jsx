@@ -1,82 +1,103 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+
+// Komponenter
+import Home from './components/Home';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import AddProduct from './components/AddProduct';
 import Login from './components/Login';
 import EditProduct from './components/EditProduct';
-import './App.css';
+import Register from './components/Register';
+import Profile from './components/Profile'; 
+import Favorites from './components/Favorites';
+import Navbar from './components/Navbar'; 
 
-// Vi skapar en intern komponent för att kunna använda useNavigate() korrekt
+// CSS
+import './styles/App.css';
+
 function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIsAdmin, handleLogout }) {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [favoriteCount, setFavoriteCount] = useState(0); // Siffra för hjärtat
+  const searchRef = useRef(null);
+  const userId = localStorage.getItem('userId');
+
+  // Hämta sökdata
+  useEffect(() => {
+    fetch('http://localhost:5000/api/products')
+      .then(res => res.json())
+      .then(data => setAllProducts(data))
+      .catch(err => console.error("Kunde inte ladda sökdata:", err));
+  }, []);
+
+  // Hämta antal favoriter för badgen
+  useEffect(() => {
+    if (userId) {
+      fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
+        .then(res => res.json())
+        .then(data => setFavoriteCount(data.length))
+        .catch(err => console.error("Kunde inte hämta favoriter:", err));
+    } else {
+      setFavoriteCount(0);
+    }
+  }, [userId]);
+
+  // Live Search
+  useEffect(() => {
+    if (searchTerm.length > 1) {
+      const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+      ).slice(0, 5);
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchTerm, allProducts]);
 
   useEffect(() => {
-    let inactivityTimeout;
-
-    const resetTimer = () => {
-      if (localStorage.getItem('token')) {
-        clearTimeout(inactivityTimeout);
-        // Logga ut efter 15 minuters inaktivitet (900 000 ms)
-        // Du kan ändra detta till 3600000 om du vill ha exakt 1h
-        inactivityTimeout = setTimeout(() => {
-          alert("Din session har gått ut på grund av inaktivitet.");
-          handleLogout();
-          navigate('/login');
-        }, 900000); 
-      }
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) setSuggestions([]);
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    // Lyssna på användarinteraktion
-    window.addEventListener('mousemove', resetTimer);
-    window.addEventListener('keydown', resetTimer);
-    window.addEventListener('click', resetTimer);
-
-    resetTimer(); // Starta timern direkt
-
-    return () => {
-      window.removeEventListener('mousemove', resetTimer);
-      window.removeEventListener('keydown', resetTimer);
-      window.removeEventListener('click', resetTimer);
-      clearTimeout(inactivityTimeout);
-    };
-  }, [isAdmin, navigate, handleLogout]);
+  const handleSelectSuggestion = (id) => {
+    setSuggestions([]);
+    setSearchTerm('');
+    navigate(`/product/${id}`);
+  };
 
   return (
     <div className="App">
-      <nav style={{ padding: '20px', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/" style={{ fontSize: '24px', fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>
-          Min Webbshop 🛒
-        </Link>
+      <Navbar 
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        suggestions={suggestions}
+        setSuggestions={setSuggestions}
+        searchRef={searchRef}
+        handleSelectSuggestion={handleSelectSuggestion}
+        cart={cart}
+        favoriteCount={favoriteCount} // Skickas till Navbar
+        isAdmin={isAdmin}
+        handleLogout={handleLogout}
+      />
 
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          {isAdmin && (
-            <Link to="/add" style={{ textDecoration: 'none', color: '#28a745', border: '1px solid #28a745', padding: '5px 15px', borderRadius: '5px' }}>
-              + Lägg till produkt
-            </Link>
-          )}
-
-          <Link to="/cart" style={{ textDecoration: 'none', color: '#007bff' }}>
-            🛒 Kundvagn ({cart.length})
-          </Link>
-
-          {localStorage.getItem('token') ? (
-            <button onClick={handleLogout} className="btn-logout" style={{ background: 'none', border: '1px solid #999', cursor: 'pointer', padding: '5px 10px', borderRadius: '4px' }}>
-              Logga ut ({localStorage.getItem('username')})
-            </button>
-          ) : (
-            <Link to="/login" style={{ textDecoration: 'none', color: '#666' }}>Logga in</Link>
-          )}
-        </div>
-      </nav>
-
-      <main className="container">
+      <main className="main-content">
         <Routes>
-          <Route path="/" element={<ProductList onAddToCart={addToCart} />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<ProductList onAddToCart={addToCart} />} />
+          <Route path="/favorites" element={<Favorites onAddToCart={addToCart} />} />
           <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
           <Route path="/cart" element={<Cart cartItems={cart} onRemove={removeFromCart} onClear={clearCart} />} />
           <Route path="/login" element={<Login setAdminStatus={setIsAdmin} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/edit/:id" element={<EditProduct />} />
           <Route path="/add" element={isAdmin ? <AddProduct /> : <Login setAdminStatus={setIsAdmin} />} />
         </Routes>
@@ -85,7 +106,6 @@ function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIs
   );
 }
 
-// Huvud-App komponenten som håller i Router
 function App() {
   const [cart, setCart] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -104,12 +124,10 @@ function App() {
     setCart(cart.filter(item => item.cartId !== cartId));
   };
 
-  const clearCart = () => setCart([]);
-
   const handleLogout = () => {
     localStorage.clear();
     setIsAdmin(false);
-    // Vi använder inte window.location.href här för att undvika helskärms-omladdning
+    window.location.href = '/'; // Enkel refresh för att nolla allt
   };
 
   return (
@@ -118,7 +136,7 @@ function App() {
         cart={cart} 
         addToCart={addToCart} 
         removeFromCart={removeFromCart} 
-        clearCart={clearCart}
+        clearCart={() => setCart([])}
         isAdmin={isAdmin}
         setIsAdmin={setIsAdmin}
         handleLogout={handleLogout}

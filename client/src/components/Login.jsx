@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Login({ setAdminStatus }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); // Ändrat här
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
@@ -12,55 +12,59 @@ function Login({ setAdminStatus }) {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ email, password }), // Skickar email istället
       });
 
       const data = await response.json();
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('isAdmin', data.isAdmin);
         localStorage.setItem('username', data.username);
+        localStorage.setItem('isAdmin', data.isAdmin);
+        localStorage.setItem('userId', data.userId);
         
         setAdminStatus(data.isAdmin);
-        alert(`Välkommen ${data.username}!`);
         navigate('/');
       } else {
-        alert(data.error || 'Inloggning misslyckades');
+        alert(data.error || "Fel uppstod");
       }
     } catch (err) {
-      console.error("Inloggningsfel:", err);
-      alert('Kunde inte ansluta till servern');
+      alert("Kunde inte ansluta till servern");
     }
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '300px', margin: '0 auto', textAlign: 'center' }}>
-      <h2>Logga in</h2>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <input 
-          type="text" 
-          placeholder="Användarnamn" 
-          value={username}
-          onChange={(e) => setUsername(e.target.value)} 
-          required 
-          style={{ padding: '8px' }}
-        />
-        <input 
-          type="password" 
-          placeholder="Lösenord" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-          style={{ padding: '8px' }}
-        />
-        <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-          Logga in
-        </button>
-      </form>
+    <div className="container">
+      <div className="form-card">
+        <h2>Logga in</h2>
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label>E-post</label>
+            <input 
+              type="email" 
+              placeholder="din@mail.com"
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label>Lösenord</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+          </div>
+          <button type="submit" className="btn btn-primary btn-block">Logga in</button>
+        </form>
+        <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>
+          Inget konto? <Link to="/register" style={{ color: '#28a745', fontWeight: 'bold' }}>Registrera dig</Link>
+        </p>
+      </div>
     </div>
   );
 }
 
-// DENNA RAD ÄR VIKTIGAST:
 export default Login;

@@ -127,7 +127,7 @@ router.delete('/:id', verifyAdmin, async (req, res) => {
 // REDIGERA PRODUKT
 router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => {
   try {
-    const { name, price, description, imageUrl } = req.body;
+    const { name, price, description, imageUrl, category, brand } = req.body;
     const product = await Product.findByPk(req.params.id);
     
     if (!product) return res.status(404).json({ error: "Hittade inte produkten" });
