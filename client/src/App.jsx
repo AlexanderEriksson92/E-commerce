@@ -22,11 +22,36 @@ function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIs
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [favoriteCount, setFavoriteCount] = useState(0); // Siffra för hjärtat
+  const [favoriteCount, setFavoriteCount] = useState(0); 
   const searchRef = useRef(null);
+  
   const userId = localStorage.getItem('userId');
 
-  // Hämta sökdata
+  const refreshFavorites = () => {
+    const currentUserId = localStorage.getItem('userId');
+    if (currentUserId) {
+      fetch(`http://localhost:5000/api/auth/favorites/details/${currentUserId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setFavoriteCount(data.length);
+          } else {
+            setFavoriteCount(0);
+          }
+        })
+        .catch(err => {
+          console.error("Kunde inte uppdatera favoriter:", err);
+          setFavoriteCount(0);
+        });
+    } else {
+      setFavoriteCount(0);
+    }
+  };
+
+  useEffect(() => {
+    refreshFavorites();
+  }, [userId]);
+
   useEffect(() => {
     fetch('http://localhost:5000/api/products')
       .then(res => res.json())
@@ -34,38 +59,16 @@ function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIs
       .catch(err => console.error("Kunde inte ladda sökdata:", err));
   }, []);
 
-  // Hämta antal favoriter för badgen
-  useEffect(() => {
-    if (userId) {
-      fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
-        .then(res => res.json())
-        .then(data => setFavoriteCount(data.length))
-        .catch(err => console.error("Kunde inte hämta favoriter:", err));
-    } else {
-      setFavoriteCount(0);
-    }
-  }, [userId]);
-
-  // Live Search
   useEffect(() => {
     if (searchTerm.length > 1) {
       const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
       ).slice(0, 5);
       setSuggestions(filtered);
     } else {
       setSuggestions([]);
     }
   }, [searchTerm, allProducts]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) setSuggestions([]);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleSelectSuggestion = (id) => {
     setSuggestions([]);
@@ -83,17 +86,18 @@ function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIs
         searchRef={searchRef}
         handleSelectSuggestion={handleSelectSuggestion}
         cart={cart}
-        favoriteCount={favoriteCount} // Skickas till Navbar
+        favoriteCount={favoriteCount}
         isAdmin={isAdmin}
         handleLogout={handleLogout}
       />
 
-      <main className="main-content">
+      {/* VIKTIGT: Vi ser till att main inte har konstig positionering i CSS */}
+      <main className="main-content-wrapper">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/favorites" element={<Favorites onAddToCart={addToCart} />} />
-          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+          <Route path="/" element={<Home refreshFavorites={refreshFavorites} />} />
+          <Route path="/products" element={<ProductList onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
+          <Route path="/favorites" element={<Favorites onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
+          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
           <Route path="/cart" element={<Cart cartItems={cart} onRemove={removeFromCart} onClear={clearCart} />} />
           <Route path="/login" element={<Login setAdminStatus={setIsAdmin} />} />
           <Route path="/register" element={<Register />} />
@@ -124,10 +128,12 @@ function App() {
     setCart(cart.filter(item => item.cartId !== cartId));
   };
 
+  const clearCart = () => setCart([]);
+
   const handleLogout = () => {
     localStorage.clear();
     setIsAdmin(false);
-    window.location.href = '/'; // Enkel refresh för att nolla allt
+    window.location.href = '/'; 
   };
 
   return (
@@ -136,7 +142,7 @@ function App() {
         cart={cart} 
         addToCart={addToCart} 
         removeFromCart={removeFromCart} 
-        clearCart={() => setCart([])}
+        clearCart={clearCart}
         isAdmin={isAdmin}
         setIsAdmin={setIsAdmin}
         handleLogout={handleLogout}

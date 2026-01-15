@@ -1,0 +1,125 @@
+/* Container för hela sidan */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: 70vh;
+}
+
+/* Rubrik */
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 30px;
+}
+
+/* Produkt-rutnätet */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+}
+
+/* Produktkortet */
+.product-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Bilden */
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+/* Text inuti kortet */
+.product-card h3 {
+  font-size: 1.1rem;
+  margin: 10px 0;
+  color: #333;
+  height: 2.4em; /* Låser höjden för två rader text */
+  overflow: hidden;
+}
+
+.product-card .price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #28a745;
+  margin-bottom: 15px;
+}
+
+/* Knappar */
+.btn {
+  padding: 12px 20px;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background-color: #1a1a1a;
+  color: white;
+  margin-top: 20px;
+}
+
+.btn-secondary:hover {
+  background-color: #333;
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: auto; /* Trycker ner knappen till botten av kortet */
+}
+
+/* Tomma tillstånd */
+p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Responsivitet för mobiler */
+@media (max-width: 600px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+  }
+  
+  .product-card img {
+    height: 160px;
+  }
+  
+  .product-card h3 {
+    font-size: 0.95rem;
+  }
+}

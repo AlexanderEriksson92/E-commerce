@@ -1,123 +1,132 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import '../styles/Profile.css';
 
 function Profile() {
-  const [userData, setUserData] = useState(null);
-  const [favProducts, setFavProducts] = useState([]);
+  const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [error, setError] = useState('');
-  
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    if (!token || !userId) {
-      setError('Du måste vara inloggad för att se din profil.');
-      return;
-    }
+    if (!token) { navigate('/login'); return; }
 
-    // 1. Hämta profilinformation
-    fetch('http://localhost:5000/api/auth/profile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => setUserData(data))
-    .catch(() => setError('Kunde inte hämta profil.'));
+    const fetchProfileData = async () => {
+      try {
+        const [userRes, orderRes, favRes] = await Promise.all([
+          fetch('http://localhost:5000/api/auth/profile', { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+          }),
+          fetch(`http://localhost:5000/api/auth/orders/${userId}`),
+          fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
+        ]);
 
-    // 2. Hämta favoritprodukter (Hjärtan)
-    fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => setFavProducts(data))
-    .catch(err => console.error("Favoritfel:", err));
+        const userData = await userRes.json();
+        const orderData = await orderRes.json();
+        const favData = await favRes.json();
 
-    // 3. Hämta orderhistorik
-    fetch(`http://localhost:5000/api/auth/orders/${userId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.error) setOrders(data);
-    })
-    .catch(err => console.error("Orderfel:", err));
-  }, [userId, token]);
-
-  const handleRemoveFavorite = async (productId) => {
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/favorites/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, userId })
-      });
-      if (response.ok) {
-        setFavProducts(favProducts.filter(p => p.id !== productId));
+        setUser(userData);
+        setOrders(orderData);
+        setFavorites(favData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Kunde inte ladda profildata", err);
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    };
 
-  if (error) return <div className="container"><p style={{ color: 'red', textAlign: 'center' }}>{error}</p></div>;
-  if (!userData) return <div className="container"><p style={{ textAlign: 'center' }}>Laddar profil...</p></div>;
+    fetchProfileData();
+  }, [token, navigate, userId]);
+
+  if (loading) return <div className="profile-loading">Laddar din profil...</div>;
 
   return (
-    <div className="container">
-      <div className="form-card" style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>👤 Min Profil</h2>
+    <div className="profile-container">
+      {/* 1. HEADER (Högst upp) */}
+      <header className="profile-header-section">
+        <h1>Välkommen, {user?.firstName}!</h1>
+        <p>Här kan du hantera dina beställningar och se dina personuppgifter.</p>
+      </header>
+
+      {/* 2. STATS-GRID (På en rad under headern) */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <span className="stat-icon">📦</span>
+          <div className="stat-val">{orders.length}</div>
+          <div className="stat-label">Beställningar</div>
+        </div>
+        <div className="stat-card" onClick={() => navigate('/favorites')} style={{ cursor: 'pointer' }}>
+          <span className="stat-icon">❤️</span>
+          <div className="stat-val">{favorites.length}</div>
+          <div className="stat-label">Favoriter</div>
+        </div>
+        <div className="stat-card">
+          <span className="stat-icon">🛡️</span>
+          <div className="stat-val">{user?.isAdmin ? 'Admin' : 'Medlem'}</div>
+          <div className="stat-label">Kontotyp</div>
+        </div>
+      </div>
+
+      {/* 3. MAIN GRID (Under stats: Info till vänster, Ordrar till höger) */}
+      <div className="profile-main-grid">
         
-        <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #eee' }}>
-          <p><strong>Namn:</strong> {userData.firstName} {userData.lastName}</p>
-          <p><strong>E-post:</strong> {userData.email}</p>
-          <p><strong>Användarnamn:</strong> {userData.username}</p>
-        </div>
+        {/* VÄNSTER KOLUMN */}
+        <aside className="profile-sidebar">
+          <div className="profile-card">
+            <h3>Personuppgifter</h3>
+            <div className="info-row">
+              <strong>Namn:</strong> {user?.firstName} {user?.lastName}
+            </div>
+            <div className="info-row">
+              <strong>E-post:</strong> {user?.email}
+            </div>
+            <hr className="divider" />
+            <button className="btn btn-outline" onClick={() => alert("Funktion för lösenordsbyte kommer snart!")}>
+              Ändra lösenord
+            </button>
+          </div>
+        </aside>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+        {/* HÖGER KOLUMN */}
+        <section className="profile-content">
+          <div className="section-header">
+            <h3>Senaste ordrar</h3>
+            <Link to="/products" className="view-all-link">Shoppa mer</Link>
+          </div>
           
-          {/* SEKTION: FAVORITER */}
-          <section>
-            <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>❤️ Mina Favoriter ({favProducts.length})</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
-              {favProducts.length > 0 ? favProducts.map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #eee', padding: '10px', borderRadius: '8px', background: '#fff' }}>
-                  <img src={p.imageUrl} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '4px' }} alt="" />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>{p.name}</p>
-                    <Link to={`/product/${p.id}`} style={{ fontSize: '12px', color: '#007bff' }}>Visa</Link>
-                  </div>
-                  <button onClick={() => handleRemoveFavorite(p.id)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '16px' }}>❌</button>
+          {orders.length > 0 ? (
+            orders.slice(0, 3).map(order => (
+              <div key={order.id} className="order-mini-card">
+                <div className="order-info">
+                  <strong>Order #{order.id}</strong>
+                  <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                 </div>
-              )) : <p style={{ color: '#999' }}>Inga favoriter sparade.</p>}
-            </div>
-          </section>
+                <div className="order-price">{order.totalAmount} kr</div>
+              </div>
+            ))
+          ) : (
+            <div className="empty-state-box">Du har inte gjort några beställningar än.</div>
+          )}
 
-          {/* SEKTION: ORDERHISTORIK */}
-          <section>
-            <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>📦 Orderhistorik ({orders.length})</h3>
-            <div style={{ marginTop: '15px' }}>
-              {orders.length > 0 ? orders.map(order => (
-                <div key={order.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', marginBottom: '15px', background: '#fff' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '13px' }}>
-                    <span>Order #{order.id}</span>
-                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <div style={{ margin: '10px 0', padding: '5px 0', borderTop: '1px solid #fafafa' }}>
-                    {order.OrderItems?.map((item, idx) => (
-                      <div key={idx} style={{ fontSize: '12px', color: '#555', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{item.Product?.name || 'Produkt'}</span>
-                        <span>{item.priceAtPurchase} kr</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ textAlign: 'right', color: '#28a745', fontWeight: 'bold', borderTop: '1px solid #eee', paddingTop: '5px' }}>
-                    Totalt: {order.totalAmount} kr
-                  </div>
-                </div>
-              )) : <p style={{ color: '#999' }}>Inga tidigare beställningar.</p>}
-            </div>
-          </section>
-
-        </div>
+          <div className="section-header" style={{ marginTop: '30px' }}>
+            <h3>Dina favoriter</h3>
+          </div>
+          <div className="fav-mini-list">
+            {favorites.slice(0, 4).map(fav => (
+              <img 
+                key={fav.id} 
+                src={fav.imageUrl || fav.image_url || `http://localhost:5000${fav.imageUrl}`} 
+                alt={fav.name} 
+                className="mini-fav-img" 
+              />
+            ))}
+            {favorites.length > 4 && <div className="more-favs">+{favorites.length - 4}</div>}
+            {favorites.length === 0 && <p className="empty-text">Inga sparade favoriter.</p>}
+          </div>
+        </section>
       </div>
     </div>
   );

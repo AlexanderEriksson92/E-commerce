@@ -1,0 +1,135 @@
+/* --- RESET & BOX-FIX --- */
+.reg-page-container, 
+.reg-page-container * {
+  box-sizing: border-box; /* Säkerställer att padding inte trycker ut fält */
+  margin: 0;
+  padding: 0;
+}
+
+/* --- CONTAINER --- */
+.reg-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  padding: 40px 20px;
+  background-color: #fcfcfc;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* --- FORM CARD --- */
+.reg-form-card {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px; /* Perfekt bredd för två kolumner */
+  border: 1px solid #f0f0f0;
+}
+
+.reg-form-card h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+/* --- FORM ROW (Förnamn & Efternamn) --- */
+.reg-form-row {
+  display: flex;
+  gap: 15px; /* Mellanrum mellan fälten */
+  width: 100%;
+}
+
+.reg-form-row .reg-form-group {
+  flex: 1; 
+  min-width: 0; /* Förhindrar att fälten sticker ut utanför föräldern */
+}
+
+/* --- FORM GROUPS --- */
+.reg-form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #444;
+  font-size: 0.85rem;
+}
+
+.reg-form-group input {
+  width: 100%; /* Fyller hela sin kolumn */
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #fff;
+  outline: none;
+}
+
+.reg-form-group input:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+}
+
+/* --- BUTTON --- */
+.reg-btn-primary {
+  width: 100%;
+  padding: 14px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.reg-btn-primary:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+}
+
+.reg-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* --- FOOTER --- */
+.reg-footer-text {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.reg-footer-text a {
+  color: #28a745;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.reg-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* --- RESPONSIVENESS --- */
+@media (max-width: 500px) {
+  .reg-form-row {
+    flex-direction: column; /* Staplar förnamn/efternamn på mobilen */
+    gap: 0;
+  }
+  
+  .reg-form-card {
+    padding: 25px;
+  }
+}

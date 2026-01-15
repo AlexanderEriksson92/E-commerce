@@ -1,35 +1,40 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-function ProductList({ onAddToCart }) {
+// Vi tar emot refreshFavorites som en prop för att kunna uppdatera navbaren
+function ProductList({ onAddToCart, refreshFavorites }) {
   const [products, setProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('Alla');
-  const [localSearch, setLocalSearch] = useState(''); // Sökning inne på sidan
+  const [localSearch, setLocalSearch] = useState(''); 
   
   const userId = localStorage.getItem('userId');
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
+    // Hämta produkter
     fetch('http://localhost:5000/api/products')
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(err => console.error("Kunde inte hämta produkter:", err));
 
+    // Hämta favorit-ID:n för att veta vilka hjärtan som ska vara röda
     if (userId) {
       fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
         .then(res => res.json())
-        .then(data => setFavorites(data.map(f => f.id)))
+        .then(data => {
+          if (Array.isArray(data)) {
+            setFavorites(data.map(f => f.id));
+          }
+        })
         .catch(err => console.error("Favorit-fel:", err));
     }
   }, [userId]);
 
-  // Hitta kategorier dynamiskt. Vi letar i flera vanliga fältnamn för säkerhets skull.
   const categories = ['Alla', ...new Set(products.map(p => 
     p.category || p.Category || p.category_name || p.type || p.kategori
   ).filter(Boolean))];
 
-  // Filtreringslogik (Kategori + Lokal sökning)
   const filteredProducts = products.filter(p => {
     const pCat = p.category || p.Category || p.category_name || p.type || p.kategori || '';
     const name = p.name || '';
@@ -42,13 +47,29 @@ function ProductList({ onAddToCart }) {
 
   const toggleFavorite = async (productId) => {
     if (!userId) return alert("Logga in först!");
-    const res = await fetch('http://localhost:5000/api/auth/favorites/toggle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, userId })
-    });
-    if (res.ok) {
-      setFavorites(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
+    
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/favorites/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, userId })
+      });
+      
+      if (res.ok) {
+        // 1. Uppdatera lokalt state för hjärtat direkt
+        setFavorites(prev => 
+          prev.includes(productId) 
+            ? prev.filter(id => id !== productId) 
+            : [...prev, productId]
+        );
+        
+        // 2. Anropa funktionen i App.jsx för att uppdatera navbaren
+        if (refreshFavorites) {
+          refreshFavorites();
+        }
+      }
+    } catch (err) {
+      console.error("Fel vid toggle:", err);
     }
   };
 
@@ -68,7 +89,6 @@ function ProductList({ onAddToCart }) {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        {/* SÖK INNE PÅ SIDAN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Sök i listan:</label>
           <input 
@@ -80,7 +100,6 @@ function ProductList({ onAddToCart }) {
           />
         </div>
 
-        {/* KATEGORI-FILTER */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Välj kategori:</label>
           <select 
@@ -104,22 +123,33 @@ function ProductList({ onAddToCart }) {
       <div className="product-grid">
         {filteredProducts.map(product => (
           <div key={product.id} className="product-card" style={{ position: 'relative' }}>
-            <button onClick={() => toggleFavorite(product.id)} className="fav-btn-circle">
+            {/* HJÄRT-KNAPP (Ifyllt/Tomt) */}
+            <button 
+              onClick={() => toggleFavorite(product.id)} 
+              className="fav-btn-circle"
+              style={{
+                position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                background: 'white', border: 'none', borderRadius: '50%',
+                width: '35px', height: '35px', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+              }}
+            >
               {favorites.includes(product.id) ? '❤️' : '🤍'}
             </button>
+
             <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-             <img 
-  src={
-    product.imageUrl 
-      ? (product.imageUrl.startsWith('http') 
-          ? product.imageUrl 
-          : `http://localhost:5000${product.imageUrl}`)
-      : 'https://placehold.co/250x200?text=Bild+saknas'
-  } 
-  alt={product.name} 
-  onError={(e) => { e.target.src = 'https://placehold.co/250x200?text=Bild+saknas'; }}
-  style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
-/>
+              <img 
+                src={
+                  product.imageUrl 
+                    ? (product.imageUrl.startsWith('http') 
+                        ? product.imageUrl 
+                        : `http://localhost:5000${product.imageUrl}`)
+                    : 'https://placehold.co/250x200?text=Bild+saknas'
+                } 
+                alt={product.name} 
+                onError={(e) => { e.target.src = 'https://placehold.co/250x200?text=Bild+saknas'; }}
+                style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }}
+              />
               <h3>{product.name}</h3>
               <p className="price">{product.price} kr</p>
             </Link>
@@ -127,13 +157,6 @@ function ProductList({ onAddToCart }) {
           </div>
         ))}
       </div>
-
-      {/* FELSÖKNING (Ta bort denna div när allt fungerar!) */}
-      {products.length > 0 && products[0] && (
-        <div style={{ marginTop: '50px', fontSize: '10px', color: '#ccc', textAlign: 'center' }}>
-          Debug info (första produkten): {JSON.stringify(products[0])}
-        </div>
-      )}
     </div>
   );
 }

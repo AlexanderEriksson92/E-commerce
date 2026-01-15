@@ -1,208 +1,158 @@
-/* 1. RESET & VARIABLER */
 :root {
   --primary: #28a745;
-  --primary-hover: #218838;
-  --danger: #dc3545;
   --dark: #1a1a1a;
-  --light: #f8f9fa;
-  --shadow: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 * {
-  box-sizing: border-box; /* Hindrar fält från att hänga utanför */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif; /* Här aktiveras typsnittet */
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  display: block !important;
-  font-family: 'Inter', sans-serif;
-  background-color: #f0f2f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fcfcfc;
   color: #333;
 }
 
-/* 2. NAVBAR */
-.main-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 40px;
-  height: 80px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #eaeaea;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.nav-section { display: flex; align-items: center; }
-.nav-section.left { flex: 1; gap: 25px; }
-.nav-section.center { flex: 2; justify-content: center; }
-.nav-section.right { flex: 1; justify-content: flex-end; gap: 25px; }
-
-.nav-logo { font-size: 24px; font-weight: 900; text-decoration: none; color: var(--dark) !important; }
-.nav-link { text-decoration: none; color: #333 !important; font-weight: 600; font-size: 15px; }
-
-/* Sökfält */
-.navbar-search-container { position: relative; width: 100%; max-width: 450px; }
-.navbar-search-input { 
-  width: 100%; padding: 12px 45px 12px 20px; border-radius: 30px; 
-  border: 1px solid #e0e0e0; background-color: #f8f8f8; outline: none; 
-}
-.search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; }
-
-/* Ikoner & Badges */
-.icon-link { font-size: 28px; color: #333 !important; text-decoration: none; position: relative; display: flex; align-items: center; cursor: pointer; }
-.cart-badge {
-  position: absolute; top: -5px; right: -8px; background-color: #ff3b30; color: white;
-  font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; line-height: 1;
-}
-.fav-badge { background-color: #555 !important; }
-
-/* 3. PROFIL DROPDOWN + HOVER FIX */
-.nav-item-dropdown { position: relative; height: 80px; display: flex; align-items: center; }
-.nav-item-dropdown.is-logged-in:hover .dropdown-content { display: block; }
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 80px; 
-  background-color: #fff;
-  min-width: 200px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  border-radius: 12px;
-  padding: 10px 0;
-  border: 1px solid #eee;
-}
-
-/* Den osynliga bryggan för smidig hovring */
-.dropdown-content::before {
-  content: "";
-  position: absolute;
-  top: -20px;
-  left: 0;
-  width: 100%;
-  height: 25px;
-  background: transparent;
-}
-
-.dropdown-content a { color: #333 !important; padding: 12px 20px; text-decoration: none; display: block; font-size: 14px; }
-.dropdown-content a:hover { background-color: #f9f9f9; color: var(--primary) !important; }
-.dropdown-header { padding: 5px 20px; font-size: 12px; color: #888; font-weight: bold; text-transform: uppercase; }
-.dropdown-logout { 
-  width: 100%; text-align: left; background: none; border: none; padding: 12px 20px; 
-  color: var(--danger); cursor: pointer; border-top: 1px solid #eee; font-weight: bold; 
-}
-
-/* 4. FORMULÄR (LOGIN/REGISTER) */
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.form-card {
-  background: white;
-  max-width: 450px;
-  width: 100%;
-  margin: 40px auto; 
-  padding: 35px;
-  border-radius: 15px;
-  box-shadow: var(--shadow);
-}
-
-.form-card h2 { margin-top: 0; margin-bottom: 25px; text-align: center; }
-
-.form-row {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-}
-
-.form-row .form-group {
-  flex: 1;
-  min-width: 0; /* Hindrar flex-items från att tryckas ut */
-}
-
-.form-group {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 8px;
+/* Snygga till rubriker lite extra */
+h1, h2, h3, h4 {
   font-weight: 600;
-  font-size: 0.9rem;
+  letter-spacing: -0.5px;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-  border-color: var(--primary);
-}
-
-/* 5. KNAPPAR */
-.btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1rem;
+/* BANNER */
+.hero-banner {
+  background: var(--dark);
+  color: white;
+  padding: 80px 20px;
   text-align: center;
+  margin-bottom: 40px;
+}
+.hero-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 30px;
+  background: var(--primary);
+  color: white !important;
   text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
 }
 
-.btn-primary { background-color: var(--primary); color: white; }
-.btn-primary:hover { background-color: var(--primary-hover); }
-.btn-block { width: 100%; display: block; }
-
-/* 6. PRODUKT-GRID & BILDER */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 30px;
+/* SLIDER KÄRNAN */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.product-card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
+.slider-section {
+  margin-bottom: 60px;
 }
 
-.product-card:hover { transform: translateY(-5px); }
-
-.product-card img, .product-card-mini img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover; /* Fixar utdragna bilder */
-  border-radius: 8px;
+.slider-wrapper-new {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-/* 7. SLIDER */
-.slider-container {
+.slider-scroll-container {
   display: flex;
   overflow-x: auto;
   gap: 20px;
   padding: 15px 5px;
+  scroll-behavior: smooth;
   scrollbar-width: none;
+  width: 100%;
 }
-.product-card-mini {
-  min-width: 220px;
+.slider-scroll-container::-webkit-scrollbar { display: none; }
+
+/* PILAR */
+.arrow-btn {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.arrow-btn.left { left: -25px; }
+.arrow-btn.right { right: -25px; }
+
+/* KORT */
+.product-card-new {
+  min-width: 260px;
   background: white;
   border-radius: 12px;
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+.product-card-new:hover { transform: translateY(-5px); }
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.product-card-new img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-info { padding: 15px; }
+.product-info h3 { margin: 0; fontSize: 16px; }
+.price { color: var(--primary); font-weight: bold; margin-top: 8px; }
+
+.fav-heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Garantera att sökförslag inte täcker skärmen när de är tomma */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  z-index: 9999;
+  display: block;
+}
+
+/* Om suggestions är tom, tvinga bort den helt */
+.search-suggestions:empty {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* FIXA MAIN-CONTENT I APP.JSX */
+main.main-content {
+  position: relative;
+  z-index: 10; /* Ligger under naven men över allt annat */
+  display: block;
+  overflow: visible;
 }
