@@ -49,10 +49,37 @@
   justify-content: center;
 }
 
+/* Container för sök som håller dropdownen på plats */
 .navbar-search-container {
   position: relative;
-  width: 100%;
-  max-width: 400px;
+  display: flex;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* Det faktiska sökfältet */
+.expandable-search {
+  width: 200px; /* Standardbredd */
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Snappy animation */
+}
+
+/* När användaren klickar i fältet */
+.expandable-search:focus {
+  width: 350px; /* Bredden den expanderar till */
+  background-color: #fff;
+  border-color: #1a1a1a;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* För att se till att texten är vänsterjusterad även under expansion */
+.navbar-search-input {
+  font-family: inherit;
+  font-size: 14px;
 }
 
 .navbar-search-input {

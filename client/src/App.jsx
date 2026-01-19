@@ -13,6 +13,8 @@ import Register from './components/Register';
 import Profile from './components/Profile'; 
 import Favorites from './components/Favorites';
 import Navbar from './components/Navbar'; 
+import AdminProductList from './components/AdminProductList';
+
 
 // CSS
 import './styles/App.css';
@@ -103,7 +105,10 @@ function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIs
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/edit/:id" element={<EditProduct />} />
-          <Route path="/add" element={isAdmin ? <AddProduct /> : <Login setAdminStatus={setIsAdmin} />} />
+         {/* ADMIN RUTTER */}
+          <Route path="/admin/products" element={<AdminProductList />} />
+          <Route path="/admin/add-product" element={<AddProduct />} />
+          <Route path="/admin/edit-product/:id" element={<EditProduct />} />
         </Routes>
       </main>
     </div>

@@ -62,7 +62,10 @@ app.use('/api/admin', adminRoutes);
 // 6. ADMIN-SKAPANDE (AUTOMATISKT)
 async function createFirstAdmin() {
   try {
-    const existingAdmin = await User.findOne({ where: { username: 'admin' } });
+    // Vi letar efter admin baserat på e-post nu för att matcha din inloggning
+    const adminEmail = 'admin@webbshop.se';
+    const existingAdmin = await User.findOne({ where: { email: adminEmail } });
+
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await User.create({ 
@@ -71,12 +74,15 @@ async function createFirstAdmin() {
         isAdmin: true,
         firstName: 'System',
         lastName: 'Admin',
-        email: 'admin@webbshop.se'
+        email: adminEmail
       });
-      console.log("✅ Admin-konto skapat: admin / admin123");
+      console.log("✅ NYTT Admin-konto skapat!");
+      console.log("Använd: admin@webbshop.se / admin123");
+    } else {
+      console.log("ℹ️ Admin-kontot (admin@webbshop.se) finns redan i databasen.");
     }
   } catch (err) {
-    console.log("ℹ️ Admin-kontot verifierat.");
+    console.error("❌ Fel vid kontroll av admin:", err);
   }
 }
 
@@ -96,6 +102,7 @@ const startServer = async () => {
     await createFirstAdmin(); 
 
     const PORT = process.env.PORT || 5000;
+    
     app.listen(PORT, () => {
       console.log(`🚀 Servern körs på http://localhost:${PORT}`);
     });

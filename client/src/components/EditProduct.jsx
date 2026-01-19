@@ -4,144 +4,102 @@ import { useParams, useNavigate } from 'react-router-dom';
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
   const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    description: '',
-    category: '',
-    brand: '',
-    imageUrl: ''
+    name: '', price: '', description: '', stock: 0, discountPrice: ''
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/products/${id}`)
       .then(res => res.json())
       .then(data => {
-        setFormData(data);
-        setPreview(data.imageUrl?.startsWith('http') 
-          ? data.imageUrl 
-          : `http://localhost:5000${data.imageUrl}`);
-        setLoading(false);
+        setFormData({
+          name: data.name,
+          price: data.price,
+          description: data.description,
+          stock: data.stock,
+          discountPrice: data.discountPrice || ''
+        });
       })
-      .catch(err => console.error("Fel vid hämtning:", err));
+      .catch(err => console.error("Kunde inte hämta produkt:", err));
   }, [id]);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    
     const data = new FormData();
     data.append('name', formData.name);
     data.append('price', formData.price);
     data.append('description', formData.description);
-    data.append('category', formData.category);
-    data.append('brand', formData.brand);
+    data.append('stock', formData.stock);
     
-    if (imageFile) {
-      data.append('imageFile', imageFile);
-    } else {
-      data.append('imageUrl', formData.imageUrl);
+    // Viktigt: Skicka tom sträng som null-värde för databasen
+    data.append('discountPrice', formData.discountPrice === '' ? '' : formData.discountPrice);
+
+    if (image) {
+      data.append('imageFile', image);
     }
 
     try {
       const res = await fetch(`http://localhost:5000/api/products/${id}`, {
         method: 'PUT',
-        headers: { 'Authorization': localStorage.getItem('token') },
+        headers: { 
+          'Authorization': `Bearer ${token}` // Lägg till Bearer prefix
+          // OBS: Ingen Content-Type header här!
+        },
         body: data
       });
 
       if (res.ok) {
-        alert("Produkten har uppdaterats!");
-        navigate('/');
+        alert("Produkten uppdaterad!");
+        navigate('/admin/products');
+      } else {
+        const errData = await res.json();
+        alert("Fel: " + errData.error);
       }
     } catch (err) {
-      alert("Kunde inte spara ändringar.");
+      alert("Nätverksfel vid uppdatering");
     }
   };
 
-  if (loading) return <div className="container">Laddar...</div>;
-
   return (
-    <div className="container">
-      <div className="form-card">
-        <h2 style={{ textAlign: 'center' }}>Redigera produkt</h2>
+    <div className="reg-page-container">
+      <div className="reg-form-card">
+        <h2>Redigera produkt</h2>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Produktnamn</label>
-            <input 
-              type="text" 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
-              required
-            />
+          <div className="reg-form-group">
+            <label>Namn</label>
+            <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
           </div>
-
-          <div className="form-group">
-            <label>Märke</label>
-            <input 
-              type="text" 
-              value={formData.brand || ''} 
-              onChange={e => setFormData({...formData, brand: e.target.value})} 
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Kategori</label>
-            <select 
-              value={formData.category || ''} 
-              onChange={e => setFormData({...formData, category: e.target.value})}
-              required
-            >
-              <option value="">Välj kategori</option>
-              <option value="Jeans">Jeans</option>
-              <option value="Tröjor">Tröjor</option>
-              <option value="Accessoarer">Accessoarer</option>
-              <option value="Skor">Skor</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Pris (kr)</label>
-            <input 
-              type="number" 
-              value={formData.price} 
-              onChange={e => setFormData({...formData, price: e.target.value})} 
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Beskrivning</label>
-            <textarea 
-              style={{ height: '100px' }}
-              value={formData.description} 
-              onChange={e => setFormData({...formData, description: e.target.value})} 
-              required
-            />
-          </div>
-
-          <div className="form-group" style={{ textAlign: 'center' }}>
-            <label>Bild</label>
-            <div style={{ marginBottom: '10px' }}>
-              <img src={preview} alt="Preview" style={{ width: '120px', borderRadius: '8px', border: '1px solid #ddd' }} />
+          
+          <div className="reg-form-row">
+            <div className="reg-form-group">
+              <label>Pris (kr)</label>
+              <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
             </div>
-            <input type="file" onChange={handleFileChange} />
+            <div className="reg-form-group">
+              <label>Reapris</label>
+              <input type="number" value={formData.discountPrice} onChange={e => setFormData({...formData, discountPrice: e.target.value})} />
+            </div>
           </div>
 
-          <div className="button-group">
-            <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/')}>Avbryt</button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>Spara ändringar</button>
+          <div className="reg-form-group">
+            <label>Lagerstatus</label>
+            <input type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} required />
           </div>
+
+          <div className="reg-form-group">
+            <label>Beskrivning</label>
+            <textarea rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+          </div>
+
+          <div className="reg-form-group">
+            <label>Byt bild (valfritt)</label>
+            <input type="file" onChange={e => setImage(e.target.files[0])} />
+          </div>
+
+          <button type="submit" className="reg-btn-primary">Spara ändringar</button>
         </form>
       </div>
     </div>

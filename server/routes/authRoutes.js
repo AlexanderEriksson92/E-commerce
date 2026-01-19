@@ -3,12 +3,13 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Importera alla modeller
+// Importerar alla modeller
 const User = require('../models/User');
 const Favorite = require('../models/Favorite');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
+const sequelize = require('../config/db');
 
 const secret = process.env.JWT_SECRET || 'superhemligt_nyckel';
 
@@ -113,32 +114,57 @@ router.get('/favorites/details/:userId', async (req, res) => {
 
 // --- 5. CHECKOUT (KÖP) ---
 router.post('/checkout', async (req, res) => {
+  // Vi startar en transaktion för att garantera datasäkerhet
+  const t = await sequelize.transaction();
+
   try {
     const { userId, items, totalAmount } = req.body;
 
-    // Skapa huvudordern (userId kan vara null för gästköp)
+    // 1. Skapa huvudordern
     const newOrder = await Order.create({ 
       userId: userId ? parseInt(userId) : null, 
       totalAmount: parseFloat(totalAmount) 
-    });
+    }, { transaction: t });
 
-    // Skapa alla orderrader
-    const orderItemsData = items.map(item => ({
-      orderId: newOrder.id,
-      productId: item.id,
-      quantity: 1,
-      priceAtPurchase: parseFloat(item.price)
-    }));
+    // 2. Skapa orderrader OCH minska lager för varje produkt
+    for (const item of items) {
+      // Hämta produkten för att kolla lagerstatus
+      const product = await Product.findByPk(item.id, { transaction: t });
 
-    await OrderItem.bulkCreate(orderItemsData);
+      if (!product) {
+        throw new Error(`Produkt med ID ${item.id} hittades inte.`);
+      }
+
+      // Kontrollera om det finns tillräckligt i lager (vi antar quantity 1 här utifrån din kod)
+      if (product.stock < 1) {
+        throw new Error(`Tyvärr tog ${product.name} precis slut i lager.`);
+      }
+
+      // Skapa order-raden
+      await OrderItem.create({
+        orderId: newOrder.id,
+        productId: item.id,
+        quantity: 1,
+        priceAtPurchase: parseFloat(item.price)
+      }, { transaction: t });
+
+      // MINSKA LAGRET MED 1
+      await product.decrement('stock', { by: 1, transaction: t });
+    }
+
+    // Om allt gick bra, bekräfta alla ändringar i databasen
+    await t.commit();
 
     res.status(201).json({ 
       message: userId ? "Order sparad på din profil!" : "Tack för ditt gästköp!", 
       orderId: newOrder.id 
     });
+
   } catch (err) {
+    // Om något gick fel (t.ex. slut i lager), rulla tillbaka allt
+    await t.rollback();
     console.error("Checkout Error:", err);
-    res.status(500).json({ error: "Kunde inte slutföra köp" });
+    res.status(400).json({ error: err.message || "Kunde inte slutföra köp" });
   }
 });
 

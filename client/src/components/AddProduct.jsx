@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Register.css'; // Vi återanvänder den snygga form-stylingen
 
 function AddProduct() {
   const [name, setName] = useState('');
@@ -9,10 +10,13 @@ function AddProduct() {
   const [brand, setBrand] = useState('');
   const [image, setImage] = useState(null);
   
+  // NYA TILLSTÅND FÖR LAGER OCH REA
+  const [stock, setStock] = useState(0);
+  const [discountPrice, setDiscountPrice] = useState('');
+
   const [availableBrands, setAvailableBrands] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   
-  // Tillstånd för "snabb-lägg-till" fälten
   const [showAddBrand, setShowAddBrand] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -48,14 +52,11 @@ function AddProduct() {
       });
 
       if (res.ok) {
-        await fetchFilters(); // Uppdatera listan
-        setter(''); // Töm fältet
-        toggle(false); // Stäng lilla rutan
-        // Sätt automatiskt det nyss skapade valet som valt i dropdownen
+        await fetchFilters();
+        setter('');
+        toggle(false);
         if (type === 'brands') setBrand(value);
         else setCategory(value);
-      } else {
-        alert("Kunde inte lägga till. Kanske finns det redan?");
       }
     } catch (err) {
       alert("Serverfel");
@@ -70,7 +71,13 @@ function AddProduct() {
     formData.append('description', description);
     formData.append('category', category);
     formData.append('brand', brand);
-    formData.append('image', image);
+    formData.append('imageFile', image); // Viktigt: Matcha namnet med backend 'imageFile'
+    
+    // SKICKA MED LAGER OCH REA
+    formData.append('stock', stock);
+    if (discountPrice) {
+      formData.append('discountPrice', discountPrice);
+    }
 
     const response = await fetch('http://localhost:5000/api/products', {
       method: 'POST',
@@ -85,72 +92,100 @@ function AddProduct() {
   };
 
   return (
-    <div className="container">
-      <div className="form-card">
-        <h2>Lägg till produkt</h2>
+    <div className="reg-page-container">
+      <div className="reg-form-card" style={{ maxWidth: '700px' }}>
+        <h2>Lägg till ny produkt</h2>
         <form onSubmit={handleSubmit}>
           
-          <div className="form-group">
+          <div className="reg-form-group">
             <label>Produktnamn</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
 
-          <div className="form-group">
-            <label>Pris (kr)</label>
-            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
-          </div>
-
-          {/* MÄRKE MED SNABBVAL */}
-          <div className="form-group">
-            <label>Märke</label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <select value={brand} onChange={(e) => setBrand(e.target.value)} required>
-                <option value="">Välj märke...</option>
-                {availableBrands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
-              </select>
-              <button type="button" className="btn btn-warning" onClick={() => setShowAddBrand(!showAddBrand)}>
-                {showAddBrand ? '✕' : '+'}
-              </button>
+          {/* RAD FÖR PRIS OCH REA */}
+          <div className="reg-form-row">
+            <div className="reg-form-group">
+              <label>Ordinarie Pris (kr)</label>
+              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
             </div>
-            {showAddBrand && (
-              <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
-                <input type="text" placeholder="Nytt märke..." value={newBrandName} onChange={e => setNewBrandName(e.target.value)} />
-                <button type="button" className="btn btn-primary" onClick={() => handleQuickAdd('brands', newBrandName, setNewBrandName, setShowAddBrand)}>Spara</button>
-              </div>
-            )}
+            <div className="reg-form-group">
+              <label>Reapris (valfritt)</label>
+              <input 
+                type="number" 
+                placeholder="Ex: 199" 
+                value={discountPrice} 
+                onChange={(e) => setDiscountPrice(e.target.value)} 
+              />
+            </div>
           </div>
 
-          {/* KATEGORI MED SNABBVAL */}
-          <div className="form-group">
+          {/* RAD FÖR LAGER OCH MÄRKE */}
+          <div className="reg-form-row">
+            <div className="reg-form-group">
+              <label>Antal i lager</label>
+              <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} required />
+            </div>
+            
+            <div className="reg-form-group">
+              <label>Märke</label>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <select value={brand} onChange={(e) => setBrand(e.target.value)} required style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }}>
+                  <option value="">Välj...</option>
+                  {availableBrands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                </select>
+                <button type="button" className="reg-btn-primary" style={{ width: '45px', padding: '0' }} onClick={() => setShowAddBrand(!showAddBrand)}>
+                  {showAddBrand ? '✕' : '+'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* SNABB-LÄGG-TILL MÄRKE */}
+          {showAddBrand && (
+            <div className="reg-form-group" style={{ background: '#f9f9f9', padding: '10px', borderRadius: '10px', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <input type="text" placeholder="Nytt märke..." value={newBrandName} onChange={e => setNewBrandName(e.target.value)} />
+                <button type="button" className="reg-btn-primary" style={{ width: 'auto', padding: '0 15px' }} onClick={() => handleQuickAdd('brands', newBrandName, setNewBrandName, setShowAddBrand)}>Spara</button>
+              </div>
+            </div>
+          )}
+
+          <div className="reg-form-group">
             <label>Kategori</label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} required>
+            <div style={{ display: 'flex', gap: '5px' }}>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} required style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }}>
                 <option value="">Välj kategori...</option>
                 {availableCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
-              <button type="button" className="btn btn-warning" onClick={() => setShowAddCategory(!showAddCategory)}>
+              <button type="button" className="reg-btn-primary" style={{ width: '45px', padding: '0' }} onClick={() => setShowAddCategory(!showAddCategory)}>
                 {showAddCategory ? '✕' : '+'}
               </button>
             </div>
-            {showAddCategory && (
-              <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
+          </div>
+
+          {/* SNABB-LÄGG-TILL KATEGORI */}
+          {showAddCategory && (
+            <div className="reg-form-group" style={{ background: '#f9f9f9', padding: '10px', borderRadius: '10px', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', gap: '5px' }}>
                 <input type="text" placeholder="Ny kategori..." value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} />
-                <button type="button" className="btn btn-primary" onClick={() => handleQuickAdd('categories', newCategoryName, setNewCategoryName, setShowAddCategory)}>Spara</button>
+                <button type="button" className="reg-btn-primary" style={{ width: 'auto', padding: '0 15px' }} onClick={() => handleQuickAdd('categories', newCategoryName, setNewCategoryName, setShowAddCategory)}>Spara</button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="form-group">
+          <div className="reg-form-group">
             <label>Beskrivning</label>
-            <textarea rows="3" value={description} onChange={(e) => setDescription(e.target.value)} required />
+            <textarea rows="3" style={{ padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }} value={description} onChange={(e) => setDescription(e.target.value)} required />
           </div>
 
-          <div className="form-group">
+          <div className="reg-form-group">
             <label>Produktbild</label>
             <input type="file" onChange={(e) => setImage(e.target.files[0])} required />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block">Spara produkt</button>
+          <button type="submit" className="reg-btn-primary" style={{ marginTop: '20px' }}>
+            Publicera produkt 🚀
+          </button>
         </form>
       </div>
     </div>

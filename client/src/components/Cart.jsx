@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom'; // Lade till Link här!
+import { useNavigate, Link } from 'react-router-dom'; 
 
 function Cart({ cartItems, onRemove, onClear }) {
   const navigate = useNavigate();
