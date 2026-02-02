@@ -13,26 +13,40 @@ const sequelize = require('../config/db');
 
 const secret = process.env.JWT_SECRET || 'superhemligt_nyckel';
 
-// --- 1. REGISTRERING (Nu med Email) ---
+// --- 1. REGISTRERING (Nu med automatisk inloggning) ---
 router.post('/register', async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
     
-    // Vi kollar om e-posten redan finns
     const userExists = await User.findOne({ where: { email } });
     if (userExists) return res.status(400).json({ error: "E-postadressen är redan registrerad" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const newUser = await User.create({
-      username: email, // Vi använder email som username i databasen för att slippa ändra modellen
+      username: email,
       firstName,
       lastName,
       email,
       password: hashedPassword,
       isAdmin: false
     });
-    res.status(201).json({ message: "Konto skapat!", userId: newUser.id });
+
+    // SKAPA TOKEN DIREKT HÄR (Samma logik som vid login)
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, isAdmin: newUser.isAdmin },
+      secret,
+      { expiresIn: '2h' }
+    );
+
+    // Skicka tillbaka allt frontend behöver för att vara "inloggad"
+    res.status(201).json({ 
+      message: "Konto skapat!", 
+      token,
+      username: newUser.firstName, 
+      isAdmin: newUser.isAdmin,
+      userId: newUser.id 
+    });
   } catch (err) {
     res.status(500).json({ error: "Kunde inte skapa konto." });
   }
@@ -41,7 +55,7 @@ router.post('/register', async (req, res) => {
 // --- 2. INLOGGNING (Nu med Email) ---
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body; // Vi tar emot email istället för username
+    const { email, password } = req.body; 
     const user = await User.findOne({ where: { email } });
     
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -56,7 +70,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      username: user.firstName, // Vi skickar förnamnet till frontend så det står "Hej Kalle!"
+      username: user.firstName, 
       isAdmin: user.isAdmin,
       userId: user.id 
     });
@@ -113,34 +127,35 @@ router.get('/favorites/details/:userId', async (req, res) => {
 });
 
 // --- 5. CHECKOUT (KÖP) ---
+// routes/auth.js - Uppdaterad Checkout
 router.post('/checkout', async (req, res) => {
-  // Vi startar en transaktion för att garantera datasäkerhet
   const t = await sequelize.transaction();
 
   try {
     const { userId, items, totalAmount } = req.body;
 
-    // 1. Skapa huvudordern
     const newOrder = await Order.create({ 
       userId: userId ? parseInt(userId) : null, 
       totalAmount: parseFloat(totalAmount) 
     }, { transaction: t });
 
-    // 2. Skapa orderrader OCH minska lager för varje produkt
     for (const item of items) {
-      // Hämta produkten för att kolla lagerstatus
       const product = await Product.findByPk(item.id, { transaction: t });
 
-      if (!product) {
-        throw new Error(`Produkt med ID ${item.id} hittades inte.`);
+      if (!product) throw new Error(`Produkten hittades inte.`);
+
+      const size = item.selectedSize; // T.ex. "S" eller "L"
+      
+      // Kolla om storleken finns och har lager
+      if (!product.inventory[size] || product.inventory[size] < 1) {
+        throw new Error(`Storlek ${size} för ${product.name} är tyvärr slut.`);
       }
 
-      // Kontrollera om det finns tillräckligt i lager (vi antar quantity 1 här utifrån din kod)
-      if (product.stock < 1) {
-        throw new Error(`Tyvärr tog ${product.name} precis slut i lager.`);
-      }
+      // Skapa en kopia av inventory och minska rätt storlek
+      const updatedInventory = { ...product.inventory };
+      updatedInventory[size] -= 1;
 
-      // Skapa order-raden
+      // Spara rader
       await OrderItem.create({
         orderId: newOrder.id,
         productId: item.id,
@@ -148,23 +163,17 @@ router.post('/checkout', async (req, res) => {
         priceAtPurchase: parseFloat(item.price)
       }, { transaction: t });
 
-      // MINSKA LAGRET MED 1
-      await product.decrement('stock', { by: 1, transaction: t });
+      // Uppdatera produkten med det nya inventory-objektet
+      await product.update({ inventory: updatedInventory }, { transaction: t });
     }
 
-    // Om allt gick bra, bekräfta alla ändringar i databasen
     await t.commit();
-
-    res.status(201).json({ 
-      message: userId ? "Order sparad på din profil!" : "Tack för ditt gästköp!", 
-      orderId: newOrder.id 
-    });
+    res.status(201).json({ message: "Köp bekräftat!", orderId: newOrder.id });
 
   } catch (err) {
-    // Om något gick fel (t.ex. slut i lager), rulla tillbaka allt
     await t.rollback();
     console.error("Checkout Error:", err);
-    res.status(400).json({ error: err.message || "Kunde inte slutföra köp" });
+    res.status(400).json({ error: err.message });
   }
 });
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import '../styles/Profile.css';
+import './Profile.css';
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedOrder, setExpandedOrder] = useState(null); // Håller koll på vilken order som är öppen
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
@@ -41,17 +42,21 @@ function Profile() {
     fetchProfileData();
   }, [token, navigate, userId]);
 
+  const toggleOrder = (id) => {
+    setExpandedOrder(expandedOrder === id ? null : id);
+  };
+
   if (loading) return <div className="profile-loading">Laddar din profil...</div>;
 
   return (
     <div className="profile-container">
-      {/* 1. HEADER (Högst upp) */}
+      {/* 1. HEADER */}
       <header className="profile-header-section">
         <h1>Välkommen, {user?.firstName}!</h1>
         <p>Här kan du hantera dina beställningar och se dina personuppgifter.</p>
       </header>
 
-      {/* 2. STATS-GRID (På en rad under headern) */}
+      {/* 2. STATS-GRID */}
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-icon">📦</span>
@@ -70,7 +75,7 @@ function Profile() {
         </div>
       </div>
 
-      {/* 3. MAIN GRID (Under stats: Info till vänster, Ordrar till höger) */}
+      {/* 3. MAIN GRID */}
       <div className="profile-main-grid">
         
         {/* VÄNSTER KOLUMN */}
@@ -90,37 +95,69 @@ function Profile() {
           </div>
         </aside>
 
-        {/* HÖGER KOLUMN */}
+        {/* HÖGER KOLUMN - ORDERHISTORIK */}
         <section className="profile-content">
           <div className="section-header">
-            <h3>Senaste ordrar</h3>
+            <h3>Orderhistorik</h3>
             <Link to="/products" className="view-all-link">Shoppa mer</Link>
           </div>
           
-          {orders.length > 0 ? (
-            orders.slice(0, 3).map(order => (
-              <div key={order.id} className="order-mini-card">
-                <div className="order-info">
-                  <strong>Order #{order.id}</strong>
-                  <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="order-price">{order.totalAmount} kr</div>
-              </div>
-            ))
-          ) : (
-            <div className="empty-state-box">Du har inte gjort några beställningar än.</div>
-          )}
+          <div className="order-history-list">
+            {orders.length > 0 ? (
+              orders.map((order) => (
+                <div key={order.id} className={`order-wrapper ${expandedOrder === order.id ? 'is-open' : ''}`}>
+                  {/* Klickbart huvudkort */}
+                  <div className="order-mini-card clickable" onClick={() => toggleOrder(order.id)}>
+                    <div className="order-info">
+                      <strong>Beställning</strong>
+                      <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="order-meta">
+                      <span className="order-status-tag">{order.status || 'Betald'}</span>
+                      <div className="order-price">{order.totalAmount} kr</div>
+                    </div>
+                  </div>
 
-          <div className="section-header" style={{ marginTop: '30px' }}>
+                  {/* Utfällbar detaljvy */}
+                  {expandedOrder === order.id && (
+                    <div className="order-details-dropdown">
+                      <div className="order-items-container">
+                        {order.OrderItems && order.OrderItems.map((item) => (
+                          <div key={item.id} className="order-item-detail">
+                            <img 
+                              src={item.Product?.imageUrl?.startsWith('http') ? item.Product.imageUrl : `http://localhost:5000${item.Product?.imageUrl}`} 
+                              alt={item.Product?.name} 
+                              className="order-item-img"
+                            />
+                            <div className="order-item-text">
+                              <p className="order-item-name">{item.Product?.name}</p>
+                              <p className="order-item-sub">Antal: {item.quantity} | {item.priceAtPurchase} kr/st</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="empty-state-box">Du har inte gjort några beställningar än.</div>
+            )}
+          </div>
+
+          {/* FAVORITER (Under ordrar) */}
+          <div className="section-header" style={{ marginTop: '40px' }}>
             <h3>Dina favoriter</h3>
           </div>
           <div className="fav-mini-list">
             {favorites.slice(0, 4).map(fav => (
               <img 
                 key={fav.id} 
-                src={fav.imageUrl || fav.image_url || `http://localhost:5000${fav.imageUrl}`} 
+                src={fav.imageUrl?.startsWith('http') ? fav.imageUrl : `http://localhost:5000${fav.imageUrl}`} 
                 alt={fav.name} 
                 className="mini-fav-img" 
+                onClick={() => navigate(`/product/${fav.id}`)}
+                style={{ cursor: 'pointer' }}
               />
             ))}
             {favorites.length > 4 && <div className="more-favs">+{favorites.length - 4}</div>}

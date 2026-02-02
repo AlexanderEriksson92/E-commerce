@@ -189,6 +189,81 @@
   color: #999;
 }
 
+/* Nya stilar för utfällbar orderhistorik */
+.order-wrapper {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.order-mini-card.clickable {
+  cursor: pointer;
+  margin-bottom: 0; /* Tar bort marginalen när den är inuti en wrapper */
+}
+
+.order-meta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.order-status-tag {
+  font-size: 0.7rem;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.order-details-dropdown {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-top: none;
+  padding: 20px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.order-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-item-detail {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.order-item-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.order-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.order-item-sub {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 2px 0 0 0;
+}
+
+/* Markera vald order */
+.order-wrapper.is-open {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
 /* Mobil-fix */
 @media (max-width: 850px) {
   .profile-main-grid {

@@ -1,41 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-
-const Category = require('../models/Category'); 
-const Brand = require('../models/Brand');      
-const sequelize = require('../config/db'); 
+const Category = require('../models/Category');
+const Brand = require('../models/Brand');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const { Op } = require('sequelize');
 
 const JWT_SECRET = 'superhemligt_nyckel';
 
-
-// Middleware för att kolla admin
+// Middleware för admin
 const verifyAdmin = (req, res, next) => {
-    let token = req.headers['authorization']; 
-    
+    let token = req.headers['authorization'];
     if (!token) return res.status(403).json({ error: "Ingen token skickad" });
-
-    // Hantera om token skickas med eller utan "Bearer "
-    if (token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
-    }
-
+    if (token.startsWith('Bearer ')) token = token.slice(7, token.length);
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        if (decoded.isAdmin) {
-            next();
-        } else {
-            res.status(403).json({ error: "Endast admin får göra detta" });
-        }
+        if (decoded.isAdmin) next();
+        else res.status(403).json({ error: "Endast admin får göra detta" });
     } catch (err) {
-        res.status(401).json({ error: "Ogiltig eller utgången token" });
+        res.status(401).json({ error: "Ogiltig token" });
     }
 };
 
-// Multer-inställningar
 const storage = multer.diskStorage({
     destination: './uploads/',
     filename: (req, file, cb) => {
@@ -46,15 +34,36 @@ const upload = multer({ storage: storage });
 
 // --- RUTTER ---
 
-// Hämtar alla produkter - NU MED INCLUDE
+// Hämta produkter (Uppdaterad med sökfunktion)
 router.get('/', async (req, res) => {
     try {
+        const { department, search, sportswear } = req.query; 
+        let whereClause = {};
+        
+        // 1. Filtrera på avdelning (Men/Women etc)
+        if (department) {
+            whereClause.department = department;
+        }
+
+        // Extra: Filtrera på sportkläder
+        if (sportswear === 'true') {   
+            whereClause.isSportswear = true;
+        }
+
+        // 2. Filtrera på sökord 
+        if (search) {
+            whereClause.name = {
+                [Op.iLike]: `%${search}%` // iLike gör sökningen okänslig för stora/små bokstäver
+            };
+        }
+
         const products = await Product.findAll({
-            // Detta gör att Category.name och Brand.name skickas med till React
+            where: whereClause,
             include: [
                 { model: Category, attributes: ['name'] },
                 { model: Brand, attributes: ['name'] }
-            ]
+            ],
+            order: [['createdAt', 'DESC']]
         });
         res.json(products);
     } catch (err) {
@@ -63,7 +72,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Hämtar EN specifik produkt - NU MED INCLUDE
+// Hämta specifik produkt
 router.get('/:id', async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id, {
@@ -79,13 +88,14 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST: Skapa produkt
+// Skapa produkt
 router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
     try {
-        const { name, price, description, imageUrl, stock, discountPrice, department } = req.body;
-        
-        const finalImageUrl = req.file 
-            ? `http://localhost:5000/uploads/${req.file.filename}` 
+        const { name, price, description, imageUrl, inventory, discountPrice, department, categoryId, brandId, color, material, isSportswear } = req.body;
+
+        // Välj filens URL om den finns, annars text-URL:en från fältet
+        const finalImageUrl = req.file
+            ? `http://localhost:5000/uploads/${req.file.filename}`
             : imageUrl;
 
         const newProduct = await Product.create({
@@ -93,9 +103,14 @@ router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
             price,
             description,
             imageUrl: finalImageUrl,
-            stock: stock || 0,
-            discountPrice: discountPrice === '' ? null : discountPrice,
-            department: department || 'Unisex'
+            inventory: typeof inventory === 'string' ? JSON.parse(inventory) : inventory,
+            discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice,
+            department: department || 'Unisex',
+            categoryId: categoryId || null,
+            brandId: brandId || null,
+            color, // NYTT
+            material, // NYTT
+            isSportswear: isSportswear === 'true' // NYTT (konvertera sträng till boolean)
         });
         res.status(201).json(newProduct);
     } catch (err) {
@@ -103,42 +118,48 @@ router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
     }
 });
 
-// PUT: Redigera produkt
+// Redigera produkt
 router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => {
     try {
-        const { name, price, description, stock, discountPrice } = req.body;
+        const { name, price, description, imageUrl, inventory, discountPrice, categoryId, brandId, department, color, material, isSportswear } = req.body;
         const product = await Product.findByPk(req.params.id);
-        
+
         if (!product) return res.status(404).json({ error: "Hittade inte" });
 
+        // Uppdateringslogik för bild: Ny fil > Ny URL-sträng > Gammal bild
         let finalImageUrl = product.imageUrl;
         if (req.file) {
             finalImageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+        } else if (imageUrl) {
+            finalImageUrl = imageUrl;
         }
 
-        // Uppdatera produkten
         await product.update({
             name: name || product.name,
             price: price || product.price,
             description: description || product.description,
             imageUrl: finalImageUrl,
-            stock: stock !== undefined ? stock : product.stock,
-            discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice
+            inventory: inventory ? (typeof inventory === 'string' ? JSON.parse(inventory) : inventory) : product.inventory,
+            discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice,
+            categoryId: categoryId || product.categoryId,
+            brandId: brandId || product.brandId,
+            department: department || product.department,
+            color: color !== undefined ? color : product.color, 
+            material: material !== undefined ? material : product.material, 
+            isSportswear: isSportswear !== undefined ? isSportswear === 'true' : product.isSportswear 
         });
 
         res.json(product);
     } catch (err) {
-        console.error("Update Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// DELETE: Radera produkt
+// Radera produkt
 router.delete('/:id', verifyAdmin, async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id);
         if (!product) return res.status(404).json({ error: "Hittade inte produkten" });
-        
         await product.destroy();
         res.json({ message: "Produkten raderad!" });
     } catch (err) {

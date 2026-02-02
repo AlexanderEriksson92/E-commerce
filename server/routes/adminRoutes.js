@@ -4,71 +4,68 @@ const Brand = require('../models/Brand');
 const Category = require('../models/Category');
 const jwt = require('jsonwebtoken');
 
-// Vi lägger verifyAdmin direkt här för att slippa import-fel
+const secret = process.env.JWT_SECRET || 'superhemligt_nyckel';
+
+// Middleware för att kontrollera Admin
 const verifyAdmin = (req, res, next) => {
-  // Vi kollar både process.env och din hårdkodade sträng för säkerhets skull
-  const secret = process.env.JWT_SECRET || 'superhemligt_nyckel';
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && (authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && (authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
 
-  if (!token) return res.status(401).json({ error: "Ingen token" });
+    if (!token) return res.status(401).json({ error: "Ingen token" });
 
-  jwt.verify(token, secret, (err, decoded) => {
-    if (err || !decoded.isAdmin) {
-      return res.status(403).json({ error: "Ej admin" });
-    }
-    req.user = decoded;
-    next();
-  });
+    jwt.verify(token, secret, (err, decoded) => {
+        if (err || !decoded.isAdmin) return res.status(403).json({ error: "Ej admin" });
+        req.user = decoded;
+        next();
+    });
 };
 
-// --- RUTTER ---
+// --- KATEGORIER ---
 
-router.get('/brands', async (req, res) => {
-  const brands = await Brand.findAll({ order: [['name', 'ASC']] });
-  res.json(brands);
-});
-
+// Hämta alla kategorier
 router.get('/categories', async (req, res) => {
-  const categories = await Category.findAll({ order: [['name', 'ASC']] });
-  res.json(categories);
-});
-
-router.post('/brands', verifyAdmin, async (req, res) => {
-  try {
-    const { name } = req.body;
-    console.log("Backend tog emot namn:", name); // Kolla terminalen!
-
-    if (!name) {
-      return res.status(400).json({ error: "Namn saknas i anropet" });
+    try {
+        const categories = await Category.findAll({ order: [['name', 'ASC']] });
+        res.json(categories);
+    } catch (err) {
+        res.status(500).json({ error: "Kunde inte hämta kategorier" });
     }
-
-    const brand = await Brand.create({ name: name });
-    res.json(brand);
-  } catch (err) {
-    console.error("Sequelize fel:", err); // Detta visar VARFÖR databasen nekar
-    res.status(500).json({ error: "Kunde inte spara i databasen", details: err.message });
-  }
 });
 
+// Skapa ny kategori
 router.post('/categories', verifyAdmin, async (req, res) => {
-  try {
-    const { name } = req.body;
-    console.log("Försöker skapa kategori med namn:", name); // Kolla terminalen!
-
-    if (!name) {
-      return res.status(400).json({ error: "Namn på kategorin saknas" });
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: "Namn saknas" });
+        const category = await Category.create({ name });
+        res.json(category);
+    } catch (err) {
+        res.status(400).json({ error: "Kategorin finns redan" });
     }
+});
 
-    const category = await Category.create({ name: name });
-    res.json(category);
-  } catch (err) {
-    console.error("DETTA ÄR FELET:", err); // Kolla din backend-terminal nu!
-    res.status(400).json({ 
-      error: "Kunde inte skapa kategori", 
-      details: err.message 
-    });
-  }
+// --- BRANDS ---
+
+// Hämta alla märken
+router.get('/brands', async (req, res) => {
+    try {
+        const brands = await Brand.findAll({ order: [['name', 'ASC']] });
+        res.json(brands);
+    } catch (err) {
+        res.status(500).json({ error: "Kunde inte hämta märken" });
+    }
+});
+
+// Skapa nytt märke
+router.post('/brands', verifyAdmin, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: "Namn saknas" });
+        const brand = await Brand.create({ name });
+        res.json(brand);
+    } catch (err) {
+        res.status(400).json({ error: "Märket finns redan" });
+    }
 });
 
 module.exports = router;

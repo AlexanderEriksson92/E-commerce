@@ -1,0 +1,309 @@
+/* src/components/ProductDetail/ProductDetail.css */
+
+.product-detail-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.detail-nav {
+  margin-bottom: 25px;
+}
+
+.detail-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+}
+
+.main-content-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  background: white;
+  padding: 40px;
+  box-shadow: var(--shadow);
+  align-items: start;
+}
+
+/* BILD-SEKTION */
+.image-side {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+}
+
+.image-side img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0; /* Helt raka hörn */
+  object-fit: cover;
+}
+
+.out-img {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.soldout-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.soldout-overlay span {
+  background: #000;
+  color: #fff;
+  padding: 12px 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.sale-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #ff4d4d;
+  color: white;
+  padding: 8px 15px;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+/* INFO-SEKTION */
+.info-side {
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-label {
+  color: #999;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.prod-title {
+  font-size: 30px;
+  margin: 0 0 20px;
+  font-weight: 800;
+  color: #000;
+  text-transform: uppercase;
+}
+
+.prod-desc {
+  color: #444;
+  line-height: 1.8;
+  margin-bottom: 35px;
+  font-size: 15px;
+}
+
+/* STORLEKAR */
+.label {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.size-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.size-btn {
+  min-width: 55px;
+  height: 48px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.one-size-btn {
+  min-width: 120px; /* Mer margin/bredd för One Size */
+  padding: 0 20px;
+}
+
+.size-btn.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.size-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  border-color: #eee;
+}
+
+/* PRIS & KNAPPAR */
+.price-row {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: baseline;
+}
+
+.new-price { color: #ff4d4d; }
+
+.old-price-strike {
+  text-decoration: line-through;
+  color: #aaa;
+  margin-left: 15px;
+  font-size: 18px;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+}
+
+.buy-btn {
+  flex: 1;
+  height: 60px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 30px; /* Runda kanter */
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.buy-btn:disabled {
+  background: #eee;
+  color: #aaa;
+}
+
+.fav-inline-btn {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 50%; /* Cirkulär */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+/* LIKNANDE PRODUKTER */
+.similar-section {
+  margin-top: 100px;
+  border-top: 1px solid #eee;
+  padding-top: 50px;
+}
+
+.similar-title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.product-card-new {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.product-card-new img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 0; 
+}
+
+.product-info { padding: 15px 0; }
+.product-info h3 { margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+.price { color: #000; font-weight: 700; margin-top: 5px; font-size: 13px; }
+
+.back-nav-btn {
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  padding: 0;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.back-nav-btn:hover {
+  opacity: 0.6;
+}
+
+/* ATRIBUT-SEKTION (Färg, Material, Sportswear) */
+.product-specs-container {
+  margin: 30px 0;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.spec-row {
+  display: flex;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.spec-label {
+  width: 100px;
+  font-weight: 800;
+  color: #000;
+  text-transform: uppercase;
+}
+
+.spec-value {
+  color: #666;
+}
+
+.sport-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 15px;
+  background: #000;
+  color: #fff;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.bolt-icon {
+  margin-right: 8px;
+  color: #ff4d4d; /* Samma röda som din SALE-tag */
+}
+
+@media (max-width: 1024px) {
+  .similar-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .main-content-card { grid-template-columns: 1fr; }
+}

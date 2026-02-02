@@ -1,0 +1,40 @@
+/* src/App.css */
+:root {
+  --primary: #28a745;
+  --dark: #1a1a1a;
+  --shadow: 0 4px 15px rgba(0,0,0,0.1);
+  --sale: #ff4d4d;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fcfcfc;
+  color: #333;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+/* Generell layout-container som används på flera sidor */
+.main-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+main.main-content {
+  position: relative;
+  z-index: 10;
+  display: block;
+  overflow: visible;
+}

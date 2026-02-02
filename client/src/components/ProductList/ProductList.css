@@ -1,0 +1,390 @@
+/* src/components/ProductList/ProductList.css */
+
+.product-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 1. TA BORT ALLA LILA/BLÅ LÄNKSTILAR OCH UNDERSTRYKNINGAR */
+.product-link, 
+.product-link:visited, 
+.product-link:hover, 
+.product-link:active {
+  text-decoration: none !important;
+  color: inherit !important;
+  display: block;
+  outline: none;
+}
+
+.product-list-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dept-title, .sale-title {
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.sale-title { color: #ff4d4d; }
+.item-count { font-size: 10px; color: #888; letter-spacing: 1px; }
+
+/* TOOLBAR */
+.product-toolbar {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+  margin-bottom: 30px;
+}
+
+.filter-toggle-btn, .sort-select {
+  background: none;
+  border: none;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* GRID */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px 20px;
+}
+
+/* PRODUKTKORTET */
+.product-card-new {
+  background: transparent;
+  position: relative;
+  transition: opacity 0.3s ease;
+}
+
+.product-card-new:hover {
+  opacity: 0.9;
+}
+
+.list-image-container {
+  width: 100%;
+  aspect-ratio: 5 / 6.5; /* Håller alla bilder i samma format */
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.product-card-new img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0; /* Raka hörn */
+  display: block;
+}
+
+/* INFO-SEKTION - ALL TEXT 12px */
+.list-product-info {
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-brand, 
+.list-product-name, 
+.reg-price, 
+.sale-price, 
+.old-price {
+  font-size: 12px; /* Samma storlek på allt */
+  margin: 0;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+}
+
+.list-brand {
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.list-product-name {
+  font-weight: 400;
+  color: #555;
+  text-transform: none;
+}
+
+.price {
+  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.reg-price, .sale-price {
+  font-weight: 700;
+  color: #000;
+}
+
+.sale-price {
+  color: #ff4d4d;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #ccc;
+  font-weight: 400;
+}
+
+/* FAVORITKNAPP OCH BADGE */
+.favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sale-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #ff4d4d;
+  color: white;
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 800;
+  z-index: 4;
+}
+
+.product-overlay-soldout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 75px); /* Täcker bara bilden */
+  background: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.product-overlay-soldout span {
+  background: #000;
+  color: #fff;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* --- PAGINERING (MODERNISERAD) --- */
+.pagination {
+  display: flex;
+  justify-content: center; /* Centrerar knapparna */
+  align-items: center;
+  gap: 12px;
+  margin: 60px 0;
+  width: 100%;
+}
+
+.page-btn {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #eeeeee;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0; /* Matchar din minimalistiska stil */
+}
+
+.page-btn:hover {
+  border-color: #000;
+  background-color: #f9f9f9;
+}
+
+.page-btn.active {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* --- FILTER SECTION: CATEGORY --- */
+.category-section {
+  margin-top: 2rem;
+  border-top: 1px solid #eee;
+  padding-top: 1.5rem;
+}
+
+.category-section label {
+  display: block;
+  font-family: 'Inter', sans-serif; /* Eller din valda font */
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.2rem;
+  color: #111;
+}
+
+/* Rutnätet för knapparna */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+/* Grundstil för kategoriknappar */
+.cat-btn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 12px 15px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  color: #555;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover-effekt */
+.cat-btn:hover {
+  border-color: #111;
+  color: #111;
+  background-color: #f9f9f9;
+}
+
+/* Aktiv kategori (den valda) */
+.cat-btn.active {
+  background-color: #111;
+  border-color: #111;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Mobilanpassning: Gör knapparna lite större för touch */
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr); /* Två kolumner i mobil */
+    gap: 8px;
+  }
+  
+  .cat-btn {
+    padding: 14px 10px;
+    font-size: 0.65rem;
+  }
+}
+
+/* --- FILTER SECTION: SEARCH --- */
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-section label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+  color: #111;
+  text-transform: uppercase;
+}
+
+.search-section input {
+  width: 100%;
+  max-width: 400px; /* Håller fältet elegant även på stora skärmar */
+  padding: 12px 0;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 2px solid #e0e0e0; /* Minimalistisk linje istället för box */
+  background: transparent;
+  outline: none;
+  transition: border-color 0.3s ease;
+  font-family: inherit;
+  color: #111;
+}
+
+/* Placeholder-stil */
+.search-section input::placeholder {
+  color: #aaa;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* När användaren klickar i fältet */
+.search-section input:focus {
+  border-bottom-color: #111; /* Linjen blir svart vid fokus */
+}
+
+/* Mobilanpassning */
+@media (max-width: 768px) {
+  .search-section input {
+    max-width: 100%; /* Tar hela bredden på mobilen */
+    font-size: 1.1rem; /* Något större för bättre läsbarhet */
+  }
+}
+
+/* --- MOBIL-OPTIMERING --- */
+@media (max-width: 768px) {
+
+ .product-list-container .product-card-new img { height: 100% !important; }
+
+  .product-list-container {
+    padding: 20px 10px;
+  }
+
+  .dept-title, .sale-title {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+
+  /* Två kolumner på mobil */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 25px 12px !important; /* Tätare mellanrum på mobil */
+  }
+
+  /* Justera bildformatet så det inte tar för mycket plats */
+  .list-image-container {
+    margin-bottom: 8px;
+  }
+
+  /* Gör texten något mindre på mobil för att undvika radbrytningar */
+  .list-brand, .list-product-name, .reg-price, .sale-price, .old-price {
+    font-size: 11px;
+  }
+
+  .pagination {
+    margin: 40px 0;
+    gap: 8px;
+  }
+
+  .page-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 12px;
+  }
+}

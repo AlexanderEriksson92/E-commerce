@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Favorites.css';
+import './Favorites.css';
 function Favorites({ onAddToCart }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);

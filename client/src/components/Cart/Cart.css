@@ -1,0 +1,152 @@
+/* src/components/Cart/Cart.css */
+
+.cart-page-container {
+  padding: 60px 20px;
+  background-color: #fcfcfc;
+  min-height: 80vh;
+}
+
+.cart-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  /* Ingen skugga eller mjuka hörn, kör på stramt */
+  border: 1px solid #eee;
+}
+
+.cart-title {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  font-weight: 900;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item-left {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.cart-item-left img {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.item-brand {
+  font-size: 11px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.item-name {
+  font-size: 13px;
+  color: #666;
+  margin: 2px 0 5px 0;
+}
+
+.item-price {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.remove-item-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.remove-item-btn:hover { color: #000; }
+
+.cart-summary {
+  margin: 40px 0;
+  padding-top: 20px;
+  border-top: 2px solid #000;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.cart-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.checkout-btn {
+  flex: 2;
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+
+.clear-cart-btn {
+  flex: 1;
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.start-shopping-btn {
+  display: inline-block;
+  margin-top: 20px;
+  background: #000;
+  color: #fff;
+  padding: 15px 30px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.cart-product-link {
+  display: block;
+  transition: opacity 0.2s;
+}
+.cart-product-link:hover { opacity: 0.7; }
+
+.item-name-link {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.item-size {
+  font-size: 10px;
+  color: #888;
+  margin: 5px 0;
+  letter-spacing: 1px;
+}

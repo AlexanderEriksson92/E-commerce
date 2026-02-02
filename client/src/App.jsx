@@ -1,157 +1,182 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
-// Komponenter
-import Home from './components/Home';
+// Global styling
+import './App.css';
+
+// --- PAGES ---
+import Home from './pages/Home/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Favorites from './pages/Favorites';
+import AdminProductList from './pages/AdminProductList';
+import EditProduct from './pages/EditProduct';
+
+// --- COMPONENTS ---
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Cart from './components/Cart';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
-import Cart from './components/Cart';
 import AddProduct from './components/AddProduct';
-import Login from './components/Login';
-import EditProduct from './components/EditProduct';
-import Register from './components/Register';
-import Profile from './components/Profile'; 
-import Favorites from './components/Favorites';
-import Navbar from './components/Navbar'; 
-import AdminProductList from './components/AdminProductList';
+import ManageShop from './components/ManageShop';
+import StatusModal from './components/StatusModal';
 
-
-// CSS
-import './styles/App.css';
-
-function AppContent({ cart, addToCart, removeFromCart, clearCart, isAdmin, setIsAdmin, handleLogout }) {
+function AppContent() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [favoriteCount, setFavoriteCount] = useState(0); 
-  const searchRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
+  const [globalModal, setGlobalModal] = useState({ open: false, msg: '', title: '', type: 'success' });
   
-  const userId = localStorage.getItem('userId');
+  // NYTT: State för den lilla notisen vid kundvagnen
+  const [showCartToast, setShowCartToast] = useState(false);
 
-  const refreshFavorites = () => {
-    const currentUserId = localStorage.getItem('userId');
-    if (currentUserId) {
-      fetch(`http://localhost:5000/api/auth/favorites/details/${currentUserId}`)
+  // Sök-states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
+  // Varukorgs-state
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Sök-logik
+  useEffect(() => {
+    if (searchTerm.length > 1) {
+      // Vi lägger till en lokal filtrering .filter() utifall backenden skickar allt
+      fetch(`http://localhost:5000/api/products?search=${searchTerm}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
-            setFavoriteCount(data.length);
+            const filtered = data.filter(p => 
+              p.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setSuggestions(filtered.slice(0, 5));
           } else {
-            setFavoriteCount(0);
+            setSuggestions([]);
           }
         })
-        .catch(err => {
-          console.error("Kunde inte uppdatera favoriter:", err);
-          setFavoriteCount(0);
-        });
-    } else {
-      setFavoriteCount(0);
-    }
-  };
-
-  useEffect(() => {
-    refreshFavorites();
-  }, [userId]);
-
-  useEffect(() => {
-    fetch('http://localhost:5000/api/products')
-      .then(res => res.json())
-      .then(data => setAllProducts(data))
-      .catch(err => console.error("Kunde inte ladda sökdata:", err));
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm.length > 1) {
-      const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ).slice(0, 5);
-      setSuggestions(filtered);
+        .catch(err => console.error("Search error:", err));
     } else {
       setSuggestions([]);
     }
-  }, [searchTerm, allProducts]);
-
-  const handleSelectSuggestion = (id) => {
+  }, [searchTerm]);
+  const handleSelectSuggestion = (productId) => {
+    setSearchTerm("");
     setSuggestions([]);
-    setSearchTerm('');
-    navigate(`/product/${id}`);
+    navigate(`/product/${productId}`);
+  };
+
+  // ADD TO CART - Nu med toast istället för stor modal
+  const addToCart = (product, selectedSize = null) => {
+    if (!product || !product.inventory) return;
+
+    setCart(prevCart => {
+      const availableSizes = Object.keys(product.inventory);
+      const finalSize = selectedSize || availableSizes[0];
+
+      return [...prevCart, {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        Brand: product.Brand,
+        inventory: product.inventory,
+        selectedSize: finalSize,
+        cartId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      }];
+    });
+
+    // Visa den lilla toasten (denna skickas till Navbar)
+    setShowCartToast(true);
+    setTimeout(() => setShowCartToast(false), 2500);
+  };
+
+  const removeFromCart = (cartId) => {
+    setCart(prevCart => prevCart.filter(item => item.cartId !== cartId));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  useEffect(() => {
+    const checkAdmin = () => setIsAdmin(localStorage.getItem('isAdmin') === 'true');
+    window.addEventListener('storage', checkAdmin);
+    return () => window.removeEventListener('storage', checkAdmin);
+  }, []);
+
+  const handleLogout = () => {
+    // Här använder vi fortfarande den stora rutan eftersom det är en viktig händelse!
+    setGlobalModal({
+      open: true,
+      msg: 'Du har loggats ut. Välkommen åter!',
+      title: 'UTLOGGAD',
+      type: 'success'
+    });
+
+    setTimeout(() => {
+      localStorage.clear();
+      setIsAdmin(false);
+      window.location.href = '/login';
+    }, 1500);
   };
 
   return (
-    <div className="App">
+    <div className="app-container">
       <Navbar 
+        isAdmin={isAdmin} 
+        handleLogout={handleLogout} 
+        cart={cart} 
+        favoriteCount={0}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         suggestions={suggestions}
-        setSuggestions={setSuggestions}
-        searchRef={searchRef}
         handleSelectSuggestion={handleSelectSuggestion}
-        cart={cart}
-        favoriteCount={favoriteCount}
-        isAdmin={isAdmin}
-        handleLogout={handleLogout}
+        showCartToast={showCartToast} // Skickas in här!
       />
 
-      {/* VIKTIGT: Vi ser till att main inte har konstig positionering i CSS */}
-      <main className="main-content-wrapper">
+      <main className="main-content">
         <Routes>
-          <Route path="/" element={<Home refreshFavorites={refreshFavorites} />} />
-          <Route path="/products" element={<ProductList onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
-          <Route path="/favorites" element={<Favorites onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
-          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} refreshFavorites={refreshFavorites} />} />
-          <Route path="/cart" element={<Cart cartItems={cart} onRemove={removeFromCart} onClear={clearCart} />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<ProductList onAddToCart={addToCart} />} />
+          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
           <Route path="/login" element={<Login setAdminStatus={setIsAdmin} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/edit/:id" element={<EditProduct />} />
-         {/* ADMIN RUTTER */}
-          <Route path="/admin/products" element={<AdminProductList />} />
+          <Route path="/favorites" element={<Favorites onAddToCart={addToCart} />} />
+          <Route path="/cart" element={<Cart cartItems={cart} onRemove={removeFromCart} onClear={clearCart} setGlobalModal={setGlobalModal} />} />
+          
+          <Route path="/admin" element={<AdminProductList />} />
           <Route path="/admin/add-product" element={<AddProduct />} />
+          <Route path="/manage-shop" element={<ManageShop />} />
           <Route path="/admin/edit-product/:id" element={<EditProduct />} />
         </Routes>
       </main>
+
+      <Footer />
+
+      {/* MODALEN FINNS KVAR FÖR LOGOUT OCH ANDRA VIKTIGA MEDDELANDEN */}
+      <StatusModal
+        isOpen={globalModal.open}
+        title={globalModal.title}
+        message={globalModal.msg}
+        type={globalModal.type}
+        onClose={() => setGlobalModal({ ...globalModal, open: false })}
+      />
     </div>
   );
 }
 
 function App() {
-  const [cart, setCart] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    setIsAdmin(adminStatus);
-  }, []);
-
-  const addToCart = (product) => {
-    const itemWithId = { ...product, cartId: Date.now() + Math.random() };
-    setCart([...cart, itemWithId]);
-  };
-
-  const removeFromCart = (cartId) => {
-    setCart(cart.filter(item => item.cartId !== cartId));
-  };
-
-  const clearCart = () => setCart([]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setIsAdmin(false);
-    window.location.href = '/'; 
-  };
-
   return (
     <Router>
-      <AppContent 
-        cart={cart} 
-        addToCart={addToCart} 
-        removeFromCart={removeFromCart} 
-        clearCart={clearCart}
-        isAdmin={isAdmin}
-        setIsAdmin={setIsAdmin}
-        handleLogout={handleLogout}
-      />
+      <AppContent />
     </Router>
   );
 }
