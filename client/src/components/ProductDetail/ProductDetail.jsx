@@ -5,7 +5,7 @@ import './ProductDetail.css';
 
 function ProductDetail({ onAddToCart, refreshFavorites }) {
   const { id } = useParams();
-  const navigate = useNavigate(); // För att kunna backa historiken
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,18 +15,12 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
 
   const userId = localStorage.getItem('userId');
 
-  // FÖRBÄTTRAD PLACEHOLDER-LOGIK
   const getOptimizedImage = (url, width = 800) => {
     const placeholder = `https://placehold.co/${width}x${Math.round(width * 1.3)}/f0f0f0/999999?text=Bild+saknas`;
-
-    if (!url || url === "" || url === "null" || url === "undefined") {
-      return placeholder;
-    }
-
+    if (!url || url === "" || url === "null" || url === "undefined") return placeholder;
     if (url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${width}&fit=cover&errorimg=${encodeURIComponent(placeholder)}`;
     }
-
     return `http://localhost:5000${url}`;
   };
 
@@ -80,13 +74,13 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
   if (loading) return <div className="loading">Laddar...</div>;
   if (!product) return <div className="error">Hittades inte.</div>;
 
-  const inventory = product.inventory || {};
-  const isOut = Object.values(inventory).reduce((a, b) => a + b, 0) <= 0;
+  // Räknar ut totalt lager från nya variants-tabellen
+  const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
+  const isOut = totalStock <= 0;
 
   return (
     <div className="product-detail-container">
       <div className="detail-nav">
-        {/* ÄNDRAD TILL NAVIGATE(-1) */}
         <button onClick={() => navigate(-1)} className="back-nav-btn">← TILLBAKA</button>
       </div>
 
@@ -104,10 +98,12 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
 
         <div className="info-side">
           <span className="dept-label">{product.department}</span>
+          <span className="spec-label" style={{ fontSize: '14px', marginBottom: '5px', display: 'block' }}>
+            {product.Brand?.name || "DESIGNER"}
+          </span>
           <h1 className="prod-title">{product.name}</h1>
           <p className="prod-desc">{product.description}</p>
 
-          {/* NY SEKTION: ATRIBUT (Färg, Material & Sportswear) */}
           <div className="product-specs-container">
             <div className="spec-row">
               <span className="spec-label">FÄRG:</span>
@@ -115,7 +111,7 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
             </div>
             <div className="spec-row">
               <span className="spec-label">MATERIAL:</span>
-              <span className="spec-value">{product.material || 'Premium Mix'}</span>
+              <span className="spec-value">{product.Material?.name || 'Premium Mix'}</span>
             </div>
 
             {product.isSportswear && (
@@ -125,10 +121,50 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
             )}
           </div>
 
+          <div className="price-row">
+            {product.discountPrice ? (
+              <>
+                <span className="prod-title new-price" style={{ margin: 0 }}>{product.discountPrice} kr</span>
+                <span className="old-price-strike">{product.price} kr</span>
+              </>
+            ) : (
+              <span className="prod-title" style={{ margin: 0 }}>{product.price} kr</span>
+            )}
+          </div>
+
+          {!isOut && (
+            <>
+              <span className="label">VÄLJ STORLEK:</span>
+              <div className="size-grid">
+                {product.variants?.map(v => (
+                  <button
+                    key={v.id}
+                    disabled={v.stock <= 0}
+                    className={`size-btn ${selectedSize === v.size ? 'active' : ''}`}
+                    onClick={() => setSelectedSize(v.size)}
+                  >
+                    {v.size}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div className="button-group">
+            <button
+              className="buy-btn"
+              disabled={isOut || !selectedSize}
+              onClick={() => onAddToCart(product, selectedSize)}
+            >
+              {isOut ? 'SLUTSÅLD' : (selectedSize ? 'LÄGG I VARUKORG' : 'VÄLJ STORLEK')}
+            </button>
+
+            <button onClick={handleFavoriteToggle} className="fav-inline-btn">
+              {isFavorite ? '❤️' : '🤍'}
+            </button>
+          </div>
         </div>
       </div>
-
-
 
       {similarProducts.length > 0 && (
         <div className="similar-section">

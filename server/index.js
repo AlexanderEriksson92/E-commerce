@@ -8,14 +8,18 @@ const sequelize = require('./config/db');
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-// 1. MODELL-IMPORTER
-const User = require('./models/User'); 
-const Product = require('./models/Product');
-const Brand = require('./models/Brand'); 
-const Category = require('./models/Category'); 
-const Favorite = require('./models/Favorite');
-const Order = require('./models/Order');
-const OrderItem = require('./models/OrderItem');
+// 1. MODELL-IMPORTER (Hämtas nu centralt från models-mappen)
+const { 
+  User, 
+  Product, 
+  Brand, 
+  Category, 
+  Material, 
+  ProductVariant, 
+  Favorite, 
+  Order, 
+  OrderItem 
+} = require('./models'); 
 
 // 2. RUTT-IMPORTER
 const productRoutes = require('./routes/productRoutes');
@@ -24,30 +28,9 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
-// --- 3. RELATIONER (ASSOCIATIONS) ---
-
-// Kategori & Varumärke -> Produkt
-Category.hasMany(Product, { foreignKey: 'categoryId' });
-Product.belongsTo(Category, { foreignKey: 'categoryId' });
-
-Brand.hasMany(Product, { foreignKey: 'brandId' });
-Product.belongsTo(Brand, { foreignKey: 'brandId' });
-
-// Favoriter (Användare <-> Produkt)
-User.hasMany(Favorite, { foreignKey: 'userId' });
-Favorite.belongsTo(User, { foreignKey: 'userId' });
-Product.hasMany(Favorite, { foreignKey: 'productId' });
-Favorite.belongsTo(Product, { foreignKey: 'productId' });
-
-// Ordrar (Användare <-> Order)
-User.hasMany(Order, { foreignKey: 'userId' });
-Order.belongsTo(User, { foreignKey: 'userId' });
-
-// OrderItems (Order <-> Produkt)
-Order.hasMany(OrderItem, { foreignKey: 'orderId' });
-OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
-Product.hasMany(OrderItem, { foreignKey: 'productId' });
-OrderItem.belongsTo(Product, { foreignKey: 'productId' });
+// --- 3. RELATIONER (Flyttade) ---
+// Notera: Sektionen "RELATIONER" är nu borttagen härifrån eftersom 
+// de definieras i models/index.js och laddas automatiskt vid importen ovan.
 
 // 4. MIDDLEWARE
 app.use(cors());
@@ -62,7 +45,6 @@ app.use('/api/admin', adminRoutes);
 // 6. ADMIN-SKAPANDE (AUTOMATISKT)
 async function createFirstAdmin() {
   try {
-    // Vi letar efter admin baserat på e-post nu för att matcha din inloggning
     const adminEmail = 'admin@webbshop.se';
     const existingAdmin = await User.findOne({ where: { email: adminEmail } });
 

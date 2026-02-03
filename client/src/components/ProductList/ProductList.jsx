@@ -21,6 +21,7 @@ function ProductList({ refreshFavorites }) {
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 16;
+  const categories = ['All', ...new Set(products.map(p => p.Category?.name || p.category).filter(Boolean))];
 
   const [modal, setModal] = useState({ open: false, msg: '', title: '', type: '', action: null });
 
@@ -88,7 +89,7 @@ function ProductList({ refreshFavorites }) {
     } catch (err) { console.error(err); }
   };
 
-  const categories = ['All', ...new Set(products.map(p => p.Category?.name || p.category).filter(Boolean))];
+
 
   const filteredProducts = products
     .filter(p => {
@@ -156,7 +157,11 @@ function ProductList({ refreshFavorites }) {
 
         <div className="product-grid">
           {currentProducts.map(product => {
-            const isOut = Object.values(product.inventory || {}).reduce((a, b) => a + b, 0) <= 0;
+            const totalStock = product.variants
+              ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+              : 0;
+
+            const isOut = totalStock <= 0;
             return (
               <div key={product.id} className="product-card-new">
                 {isOut && <div className="product-overlay-soldout"><span>SLUTSÅLD</span></div>}

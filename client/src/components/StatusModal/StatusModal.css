@@ -84,3 +84,111 @@
   text-transform: uppercase;
   text-decoration: underline;
 }
+
+/* StatusModal.css - Uppdaterad för att vinna över FormStyles.css */
+
+.status-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+/* Genom att vara mer specifik här blockerar vi påverkan från Register.css */
+.status-modal-box {
+  background-color: #fff !important; /* Tvingar vit bakgrund */
+  padding: 50px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid #000;
+  animation: modalAppear 0.3s ease-out;
+  box-sizing: border-box; /* Ser till att padding inte spräcker bredden */
+}
+
+@keyframes modalAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* StatusModal.css - Total isolering */
+
+/* Overlay - tvinga den att täcka hela skärmen oavsett förälder */
+.status-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important; /* Extremt högt */
+  backdrop-filter: blur(5px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Boxen - nollställ allt som Register.css kan ha ställt till med */
+.status-modal-overlay .status-modal-box {
+  background-color: #fff !important;
+  padding: 50px 40px !important;
+  text-align: center !important;
+  max-width: 400px !important;
+  width: 90% !important;
+  border: 1px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
+  display: block !important; /* Förhindrar att den blir en flex-item fult */
+  position: relative !important;
+  transform: none !important;
+  margin: auto !important;
+}
+
+/* Titeln - se till att den inte är enorm eller har konstiga marginaler */
+.status-modal-overlay .status-modal-title {
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  letter-spacing: 4px !important;
+  text-transform: uppercase !important;
+  margin: 0 0 15px 0 !important;
+  color: #000 !important;
+  display: block !important;
+}
+
+/* Knapparna - tvinga dem att se ut som knappar och inte register-fält */
+.status-modal-overlay .status-modal-btn-primary {
+  background: #000 !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 15px !important;
+  width: 100% !important;
+  height: auto !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  margin-top: 10px !important;
+}
+
+.status-modal-overlay .status-modal-btn-secondary {
+  background: transparent !important;
+  color: #000 !important;
+  border: none !important;
+  text-decoration: underline !important;
+  font-size: 10px !important;
+  margin-top: 15px !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+}

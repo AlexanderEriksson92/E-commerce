@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Favorites.css';
+
 function Favorites({ onAddToCart }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSizes, setSelectedSizes] = useState({}); 
   const userId = localStorage.getItem('userId');
   const navigate = useNavigate();
 
@@ -25,28 +27,27 @@ function Favorites({ onAddToCart }) {
       });
   }, [userId]);
 
-  // Om användaren inte är inloggad
+  const handleSizeSelect = (productId, size) => {
+    setSelectedSizes(prev => ({ ...prev, [productId]: size }));
+  };
+
   if (!userId) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div className="container" style={{ textAlign: 'center' }}>
         <h2>Mina Favoriter ♡</h2>
         <p>Du måste vara inloggad för att se dina sparade favoriter.</p>
-        <button 
-          onClick={() => navigate('/login')} 
-          className="btn btn-primary"
-          style={{ marginTop: '20px' }}
-        >
+        <button onClick={() => navigate('/login')} className="btn btn-primary" style={{ marginTop: '20px' }}>
           Gå till Inloggning
         </button>
       </div>
     );
   }
 
-  if (loading) return <p style={{ textAlign: 'center' }}>Laddar dina favoriter...</p>;
+  if (loading) return <p style={{ textAlign: 'center', padding: '50px' }}>Laddar dina favoriter...</p>;
 
   return (
     <div className="container">
-      <h2 style={{ textAlign: 'center', margin: '30px 0' }}>Mina Favoriter ♡</h2>
+      <h2 style={{ textAlign: 'center' }}>Mina Favoriter ♡</h2>
       
       {favorites.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
@@ -55,25 +56,51 @@ function Favorites({ onAddToCart }) {
         </div>
       ) : (
         <div className="product-grid">
-          {favorites.map(product => (
-            <div key={product.id} className="product-card">
-              <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <img 
-                  src={product.imageUrl?.startsWith('http') ? product.imageUrl : `http://localhost:5000${product.imageUrl}`} 
-                  alt={product.name} 
-                  onError={(e) => { e.target.src = 'https://placehold.co/250x200?text=Bild+saknas'; }}
-                />
-                <h3>{product.name}</h3>
-                <p className="price">{product.price} kr</p>
-              </Link>
-              <button 
-                className="btn btn-primary btn-block" 
-                onClick={() => onAddToCart(product)}
-              >
-                Lägg i varukorg
-              </button>
-            </div>
-          ))}
+          {favorites.map(product => {
+            const currentSize = selectedSizes[product.id];
+            
+            return (
+              <div key={product.id} className="product-card">
+                <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <img 
+                    src={product.imageUrl?.startsWith('http') ? product.imageUrl : `http://localhost:5000${product.imageUrl}`} 
+                    alt={product.name} 
+                    onError={(e) => { e.target.src = 'https://placehold.co/250x200?text=Bild+saknas'; }}
+                  />
+                  <h3>{product.name}</h3>
+                  <p className="price">{product.price} kr</p>
+                </Link>
+
+                {/* NY SEKTION FÖR STORLEKAR - Använder dina stilar nedan */}
+                <div className="size-selector-mini">
+                  {product.variants && product.variants.length > 0 ? (
+                    <div className="mini-size-grid">
+                      {product.variants.map(v => (
+                        <button
+                          key={v.id}
+                          disabled={v.stock <= 0}
+                          className={`mini-size-btn ${currentSize === v.size ? 'active' : ''}`}
+                          onClick={() => handleSizeSelect(product.id, v.size)}
+                        >
+                          {v.size}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '12px', color: '#ff4d4d' }}>Slut i lager</p>
+                  )}
+                </div>
+
+                <button 
+                  className="btn btn-primary btn-block" 
+                  disabled={!currentSize}
+                  onClick={() => onAddToCart(product, currentSize)}
+                >
+                  {currentSize ? 'LÄGG I VARUKORG' : 'VÄLJ STORLEK'}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

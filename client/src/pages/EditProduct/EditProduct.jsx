@@ -245,20 +245,40 @@ function EditProduct() {
           </div>
 
           <div className="reg-form-group">
-            <label>Current Image</label>
-            <div style={{ marginBottom: '10px' }}>
+            <label>Current Image Preview</label>
+            <div style={{ marginBottom: '15px', textAlign: 'center', background: '#fdfdfd', padding: '10px', borderRadius: '12px', border: '1px dashed #ccc' }}>
               <img
-                src={currentImage || 'https://placehold.co/400x500/EEE/999?text=No+Image'}
+                src={newImage ? URL.createObjectURL(newImage) : currentImage}
                 alt="Preview"
-                style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', backgroundColor: '#f5f5f5' }}
+                style={{
+                  width: '150px',
+                  height: '200px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                }}
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://placehold.co/400x500/EEE/999?text=No+Image';
+                  e.target.src = 'https://placehold.co/400x500/EEE/999?text=Invalid+URL';
                 }}
               />
             </div>
-            <label>Change Image (Optional)</label>
-            <input type="file" onChange={(e) => setNewImage(e.target.files[0])} />
+
+            <label>Change via Image URL (Pexels etc.)</label>
+            <input
+              type="text"
+              value={currentImage}
+              onChange={(e) => setCurrentImage(e.target.value)}
+              placeholder="https://images.pexels.com/..."
+              style={{ ...selectStyle, marginBottom: '10px' }}
+            />
+
+            <label>Or Upload Local File</label>
+            <input
+              type="file"
+              onChange={(e) => setNewImage(e.target.files[0])}
+              style={{ fontSize: '12px' }}
+            />
           </div>
 
           <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>

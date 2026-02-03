@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/Product');
-const Category = require('../models/Category');
-const Brand = require('../models/Brand');
+// Importera modeller från din index-fil för att få med alla relationer
+const { Product, Category, Brand, Material, ProductVariant } = require('../models');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
@@ -34,34 +33,25 @@ const upload = multer({ storage: storage });
 
 // --- RUTTER ---
 
-// Hämta produkter (Uppdaterad med sökfunktion)
+// 1. Hämta produkter (inkluderar Material & Variants)
 router.get('/', async (req, res) => {
     try {
         const { department, search, sportswear } = req.query; 
         let whereClause = {};
         
-        // 1. Filtrera på avdelning (Men/Women etc)
-        if (department) {
-            whereClause.department = department;
-        }
-
-        // Extra: Filtrera på sportkläder
-        if (sportswear === 'true') {   
-            whereClause.isSportswear = true;
-        }
-
-        // 2. Filtrera på sökord 
+        if (department) whereClause.department = department;
+        if (sportswear === 'true') whereClause.isSportswear = true;
         if (search) {
-            whereClause.name = {
-                [Op.iLike]: `%${search}%` // iLike gör sökningen okänslig för stora/små bokstäver
-            };
+            whereClause.name = { [Op.iLike]: `%${search}%` };
         }
 
         const products = await Product.findAll({
             where: whereClause,
             include: [
                 { model: Category, attributes: ['name'] },
-                { model: Brand, attributes: ['name'] }
+                { model: Brand, attributes: ['name'] },
+                { model: Material, attributes: ['name'] },
+                { model: ProductVariant, as: 'variants' } 
             ],
             order: [['createdAt', 'DESC']]
         });
@@ -72,13 +62,15 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Hämta specifik produkt
+// 2. Hämta specifik produkt
 router.get('/:id', async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id, {
             include: [
                 { model: Category, attributes: ['name'] },
-                { model: Brand, attributes: ['name'] }
+                { model: Brand, attributes: ['name'] },
+                { model: Material, attributes: ['name'] },
+                { model: ProductVariant, as: 'variants' }
             ]
         });
         if (product) res.json(product);
@@ -88,45 +80,55 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Skapa produkt
+// 3. Skapa produkt (inkl. Lager/Varianter)
 router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
     try {
-        const { name, price, description, imageUrl, inventory, discountPrice, department, categoryId, brandId, color, material, isSportswear } = req.body;
+        const { name, price, description, imageUrl, inventory, discountPrice, department, categoryId, brandId, color, materialId, isSportswear } = req.body;
 
-        // Välj filens URL om den finns, annars text-URL:en från fältet
         const finalImageUrl = req.file
             ? `http://localhost:5000/uploads/${req.file.filename}`
             : imageUrl;
 
+        // Skapa produkten
         const newProduct = await Product.create({
             name,
             price,
             description,
             imageUrl: finalImageUrl,
-            inventory: typeof inventory === 'string' ? JSON.parse(inventory) : inventory,
             discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice,
             department: department || 'Unisex',
             categoryId: categoryId || null,
             brandId: brandId || null,
-            color, // NYTT
-            material, // NYTT
-            isSportswear: isSportswear === 'true' // NYTT (konvertera sträng till boolean)
+            materialId: materialId || null,
+            color,
+            isSportswear: isSportswear === 'true'
         });
+
+        // Hantera inventory (ProductVariants)
+        if (inventory) {
+            const invObj = typeof inventory === 'string' ? JSON.parse(inventory) : inventory;
+            const variantData = Object.entries(invObj).map(([size, stock]) => ({
+                size,
+                stock: parseInt(stock),
+                productId: newProduct.id
+            }));
+            await ProductVariant.bulkCreate(variantData);
+        }
+
         res.status(201).json(newProduct);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Redigera produkt
+// 4. Redigera produkt
 router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => {
     try {
-        const { name, price, description, imageUrl, inventory, discountPrice, categoryId, brandId, department, color, material, isSportswear } = req.body;
+        const { name, price, description, imageUrl, inventory, discountPrice, categoryId, brandId, materialId, department, color, isSportswear } = req.body;
         const product = await Product.findByPk(req.params.id);
 
         if (!product) return res.status(404).json({ error: "Hittade inte" });
 
-        // Uppdateringslogik för bild: Ny fil > Ny URL-sträng > Gammal bild
         let finalImageUrl = product.imageUrl;
         if (req.file) {
             finalImageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
@@ -139,15 +141,29 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
             price: price || product.price,
             description: description || product.description,
             imageUrl: finalImageUrl,
-            inventory: inventory ? (typeof inventory === 'string' ? JSON.parse(inventory) : inventory) : product.inventory,
             discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice,
             categoryId: categoryId || product.categoryId,
             brandId: brandId || product.brandId,
+            materialId: materialId || product.materialId,
             department: department || product.department,
             color: color !== undefined ? color : product.color, 
-            material: material !== undefined ? material : product.material, 
             isSportswear: isSportswear !== undefined ? isSportswear === 'true' : product.isSportswear 
         });
+
+        // Uppdatera lager (Varianter)
+        if (inventory) {
+            const invObj = typeof inventory === 'string' ? JSON.parse(inventory) : inventory;
+            
+            // För enkelhetens skull i en admin-vy: radera gamla varianter och lägg till nya
+            await ProductVariant.destroy({ where: { productId: product.id } });
+            
+            const variantData = Object.entries(invObj).map(([size, stock]) => ({
+                size,
+                stock: parseInt(stock),
+                productId: product.id
+            }));
+            await ProductVariant.bulkCreate(variantData);
+        }
 
         res.json(product);
     } catch (err) {
@@ -155,11 +171,13 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
     }
 });
 
-// Radera produkt
+// 5. Radera produkt
 router.delete('/:id', verifyAdmin, async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id);
         if (!product) return res.status(404).json({ error: "Hittade inte produkten" });
+        
+        // ProductVariant raderas automatiskt om du har ON DELETE CASCADE i din association
         await product.destroy();
         res.json({ message: "Produkten raderad!" });
     } catch (err) {

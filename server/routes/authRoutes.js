@@ -118,10 +118,26 @@ router.get('/favorites/details/:userId', async (req, res) => {
   try {
     const favs = await Favorite.findAll({ 
       where: { userId: req.params.userId }, 
-      include: [{ model: Product }] 
+      include: [{ 
+        model: Product,
+        include: [
+          { 
+            // Vi måste inkludera variants för att frontend ska se storlekarna
+            model: require('../models/ProductVariant'), 
+            as: 'variants' 
+          },
+          {
+            model: require('../models/Brand'),
+            attributes: ['name']
+          }
+        ] 
+      }] 
     });
+    
+    // Vi mappar ut produkterna och ser till att variants följer med
     res.json(favs.map(f => f.Product));
   } catch (err) {
+    console.error("Favorit-detalj fel:", err);
     res.status(500).json({ error: "Fel vid hämtning av favoriter" });
   }
 });

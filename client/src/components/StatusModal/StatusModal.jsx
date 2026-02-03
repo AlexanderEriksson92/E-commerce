@@ -1,6 +1,7 @@
 import React from 'react';
 import './StatusModal.css';
 
+// Kontrollera att funktionsnamnet är exakt StatusModal
 const StatusModal = ({ isOpen, title, message, type, onClose, onConfirm, confirmText }) => {
   if (!isOpen) return null;
 
@@ -29,5 +30,6 @@ const StatusModal = ({ isOpen, title, message, type, onClose, onConfirm, confirm
     </div>
   );
 };
+
 
 export default StatusModal;
