@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 // 1. Hämta produkter (inkluderar Material & Variants)
 router.get('/', async (req, res) => {
     try {
-        const { department } = req.query; 
+        const { department } = req.query;
         let whereClause = {};
 
         if (department === 'Sport') {
@@ -55,7 +55,7 @@ router.get('/', async (req, res) => {
                 { model: Brand, attributes: ['name'] },
                 { model: Material, attributes: ['name'] },
                 { model: Color, attributes: ['name'] },
-                { model: ProductVariant, as: 'variants' } 
+                { model: ProductVariant, as: 'variants' }
             ]
         });
         res.json(products);
@@ -90,7 +90,7 @@ router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
         const { name, price, description, imageUrl, inventory, discountPrice, department, categoryId, brandId, color, materialId, isSportswear } = req.body;
 
         const finalImageUrl = req.file
-            ? `http://${API_URL}/uploads/${req.file.filename}`
+            ? `/uploads/${req.file.filename}`
             : imageUrl;
 
         // Skapa produkten
@@ -134,8 +134,10 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
         if (!product) return res.status(404).json({ error: "Hittade inte" });
 
         let finalImageUrl = product.imageUrl;
+
         if (req.file) {
-            finalImageUrl = `http://${API_URL}/uploads/${req.file.filename}`;
+            // Spara bara stigen till filen, inte hela domännamnet
+            finalImageUrl = `/uploads/${req.file.filename}`;
         } else if (imageUrl) {
             finalImageUrl = imageUrl;
         }
@@ -150,17 +152,17 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
             brandId: brandId || product.brandId,
             materialId: materialId || product.materialId,
             department: department || product.department,
-            color: color !== undefined ? color : product.color, 
-            isSportswear: isSportswear !== undefined ? isSportswear === 'true' : product.isSportswear 
+            color: color !== undefined ? color : product.color,
+            isSportswear: isSportswear !== undefined ? isSportswear === 'true' : product.isSportswear
         });
 
         // Uppdatera lager (Varianter)
         if (inventory) {
             const invObj = typeof inventory === 'string' ? JSON.parse(inventory) : inventory;
-            
+
             // För enkelhetens skull i en admin-vy: radera gamla varianter och lägg till nya
             await ProductVariant.destroy({ where: { productId: product.id } });
-            
+
             const variantData = Object.entries(invObj).map(([size, stock]) => ({
                 size,
                 stock: parseInt(stock),
@@ -180,7 +182,7 @@ router.delete('/:id', verifyAdmin, async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id);
         if (!product) return res.status(404).json({ error: "Hittade inte produkten" });
-        
+
         // ProductVariant raderas automatiskt om du har ON DELETE CASCADE i din association
         await product.destroy();
         res.json({ message: "Produkten raderad!" });
