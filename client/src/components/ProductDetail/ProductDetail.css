@@ -130,6 +130,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
+  padding: 0px 6px;
 }
 
 .one-size-btn {

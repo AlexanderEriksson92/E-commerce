@@ -22,6 +22,7 @@ import ProductDetail from './components/ProductDetail';
 import AddProduct from './components/AddProduct';
 import ManageShop from './components/ManageShop';
 import StatusModal from './components/StatusModal';
+import ScrollToTop from './components/ScrollToTop';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -176,6 +177,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AppContent />
     </Router>
   );

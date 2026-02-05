@@ -81,7 +81,7 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
   return (
     <div className="product-detail-container">
       <div className="detail-nav">
-        <button onClick={() => navigate(-1)} className="back-nav-btn">← TILLBAKA</button>
+        <button onClick={() => navigate(-1)} className="back-nav-btn">← BACK</button>
       </div>
 
       <div className="main-content-card">
@@ -106,8 +106,10 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
 
           <div className="product-specs-container">
             <div className="spec-row">
-              <span className="spec-label">FÄRG:</span>
-              <span className="spec-value">{product.color || 'Klassisk'}</span>
+              <span className="spec-label">COLOR:</span>
+              <span className="spec-value">
+                {product.Color?.name || product.color || 'Klassisk'}
+              </span>
             </div>
             <div className="spec-row">
               <span className="spec-label">MATERIAL:</span>

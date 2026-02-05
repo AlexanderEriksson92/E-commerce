@@ -49,10 +49,10 @@ function Home() {
               {products.map(p => (
                 <div key={p.id} className="product-card-new" onClick={() => navigate(`/product/${p.id}`)}>
                   <div className="product-img-container">
-                    <img 
-                      src={getImg(p.imageUrl)} 
-                      alt={p.name} 
-                      className="product-img-slide" 
+                    <img
+                      src={getImg(p.imageUrl)}
+                      alt={p.name}
+                      className="product-img-slide"
                       onError={(e) => { e.target.src = 'https://placehold.co/400x500/EEE/999?text=Error+Loading'; }}
                     />
                   </div>
@@ -94,7 +94,7 @@ function Home() {
             const imgId = gender === 'Men' ? '1183266' : gender === 'Women' ? '1926769' : '1619697';
             return (
               <div key={gender} className="category-card-main" onClick={() => navigate('/products', { state: { gender } })}>
-                <div className="category-bg-img" style={{ backgroundImage: `url('https://images.pexels.com/photos/${imgId}/pexels-photo-${imgId}.jpeg?w=800')` }}></div>
+                <div className="category-bg-img" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('https://images.pexels.com/photos/${imgId}/pexels-photo-${imgId}.jpeg?w=800')` }}></div>
                 <div className="category-card-overlay">
                   <h3 className="category-text-style">{gender.toUpperCase()}</h3>
                   <span className="explore-link">EXPLORE</span>
@@ -106,20 +106,74 @@ function Home() {
       </div>
 
       {/* 1. Latest Drops Slider */}
-      <ProductSlider title="LATEST DROPS" products={latestProducts} bgColor="#d5d8c9" />
+      <ProductSlider title="LATEST DROPS" products={latestProducts} bgColor="#f4f4f2" />
 
-      {/* 2. The Originals (Nu mellan sliders) */}
-      <div className="originals-wrapper">
+      {/* 2. THE ORIGINALS - MATT FULL-WIDTH SECTION */}
+      <section className="originals-full-width">
         <div className="container-fixed">
-          <div className="originals-content">
-            <h2 className="originals-title">THE ORIGINALS</h2>
-            <button className="originals-btn" onClick={() => navigate('/products')}>VIEW COLLECTION</button>
+          <div className="originals-grid">
+
+            {/* Vänster sida: Text */}
+            <div className="originals-text-panel">
+              <h2 className="originals-title">THE ORIGINALS</h2>
+              <p className="originals-description">
+                Experience the perfect blend of heritage and modern design.
+                Our signature collection features timeless essentials crafted
+                for those who value quality over trends.
+              </p>
+              <button className="originals-btn" onClick={() => navigate('/products')}>
+                VIEW COLLECTION
+              </button>
+            </div>
+
+            {/* Höger sida: Bild */}
+            <div className="originals-image-panel">
+              <img
+                src="https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&w=1000"
+                alt="The Originals Collection"
+              />
+            </div>
+
           </div>
         </div>
-      </div>
+      </section>
+
 
       {/* 3. Steal The Look Slider */}
       <ProductSlider title="STEAL THE LOOK" products={popularProducts} bgColor="#dad5ce" />
+
+      {/* 4. SPORT SECTION - SPEGELVÄND LAYOUT */}
+      <section className="sport-section">
+        <div className="container-fixed">
+          <div className="originals-grid sport-reverse"> {/* Vi återanvänder grid-logiken men lägger till en reverse-klass */}
+
+            {/* Vänster sida: Bild */}
+            <div className="originals-image-panel sport-img">
+              <img
+                src="https://images.pexels.com/photos/3760259/pexels-photo-3760259.jpeg?auto=compress&w=1000"
+                alt="Sport Collection"
+              />
+            </div>
+
+            {/* Höger sida: Text */}
+            <div className="originals-text-panel sport-text">
+              <h2 className="originals-title">PERFORMANCE TECH</h2>
+              <p className="originals-description">
+                Push your limits with our new athletic range. Engineered for
+                breathability and movement, designed to keep you at the top of your game.
+              </p>
+              <button
+                className="originals-btn"
+                onClick={() => navigate('/products?department=Sport')}
+              >
+                EXPLORE SPORT
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

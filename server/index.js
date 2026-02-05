@@ -72,7 +72,6 @@ async function createFirstAdmin() {
 const startServer = async () => {
   try {
     // Anslut till DB
-    await sequelize.authenticate();
     console.log('✅ Ansluten till databasen!');
 
     // Synkronisera tabeller

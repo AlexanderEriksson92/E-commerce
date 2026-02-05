@@ -136,4 +136,9 @@
   .footer-brand-text {
     margin: 0 auto;
   }
+  .footer-benefits-grid {
+    display: grid;
+    grid-template-columns: 2fr 2fr;
+    gap: 10px;
+  }
 }

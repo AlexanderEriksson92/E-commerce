@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Importera modeller från din index-fil för att få med alla relationer
-const { Product, Category, Brand, Material, ProductVariant } = require('../models');
+const { Product, Category, Brand, Material, Color, ProductVariant } = require('../models');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
@@ -36,13 +36,16 @@ const upload = multer({ storage: storage });
 // 1. Hämta produkter (inkluderar Material & Variants)
 router.get('/', async (req, res) => {
     try {
-        const { department, search, sportswear } = req.query; 
+        const { department } = req.query; 
         let whereClause = {};
-        
-        if (department) whereClause.department = department;
-        if (sportswear === 'true') whereClause.isSportswear = true;
-        if (search) {
-            whereClause.name = { [Op.iLike]: `%${search}%` };
+
+        if (department === 'Sport') {
+            // Vi använder [Op.or] för att täcka alla baser (true, 1, eller strängen '1')
+            whereClause.isSportswear = {
+                [Op.or]: [true, 1, '1']
+            };
+        } else if (department) {
+            whereClause.department = department;
         }
 
         const products = await Product.findAll({
@@ -51,14 +54,14 @@ router.get('/', async (req, res) => {
                 { model: Category, attributes: ['name'] },
                 { model: Brand, attributes: ['name'] },
                 { model: Material, attributes: ['name'] },
+                { model: Color, attributes: ['name'] },
                 { model: ProductVariant, as: 'variants' } 
-            ],
-            order: [['createdAt', 'DESC']]
+            ]
         });
         res.json(products);
     } catch (err) {
-        console.error("Backend Error:", err);
-        res.status(500).json({ error: 'Kunde inte hämta produkter' });
+        console.error("DEBUG ERROR:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -70,6 +73,7 @@ router.get('/:id', async (req, res) => {
                 { model: Category, attributes: ['name'] },
                 { model: Brand, attributes: ['name'] },
                 { model: Material, attributes: ['name'] },
+                { model: Color, attributes: ['name'] },
                 { model: ProductVariant, as: 'variants' }
             ]
         });
