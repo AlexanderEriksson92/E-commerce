@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
+import API_URL from '../../api';
 
 function Navbar({
   searchTerm = "",
@@ -111,7 +112,7 @@ function Navbar({
                         className="suggestion-item"
                       >
                         <img
-                          src={p.imageUrl?.startsWith('http') ? p.imageUrl : `http://localhost:5000${p.imageUrl}`}
+                          src={p.imageUrl?.startsWith('http') ? p.imageUrl : `http://${API_URL}${p.imageUrl}`}
                           alt=""
                           onError={(e) => { e.target.src = 'https://placehold.co/45x45?text=Img'; }}
                         />

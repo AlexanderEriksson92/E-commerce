@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import StatusModal from '../../components/StatusModal/StatusModal';
 import '../../styles/FormStyles.css';
 import './EditProduct.css';
+import API_URL from '../../api';
 
 function EditProduct() {
   const { id } = useParams();
@@ -31,9 +32,9 @@ function EditProduct() {
     const fetchData = async () => {
       try {
         const [bRes, cRes, pRes] = await Promise.all([
-          fetch('http://localhost:5000/api/admin/brands'),
-          fetch('http://localhost:5000/api/admin/categories'),
-          fetch(`http://localhost:5000/api/products/${id}`)
+          fetch('http://${API_URL}/api/admin/brands'),
+          fetch('http://${API_URL}/api/admin/categories'),
+          fetch(`http://${API_URL}/api/products/${id}`)
         ]);
         const brandsData = await bRes.json();
         const catsData = await cRes.json();
@@ -75,7 +76,7 @@ function EditProduct() {
     else formData.append('imageUrl', currentImage);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const response = await fetch(`http://${API_URL}/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Authorization': token },
         body: formData,

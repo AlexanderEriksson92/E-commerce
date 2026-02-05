@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Favorites.css';
+import API_URL from '../../api';
 
 function Favorites({ onAddToCart }) {
   const [favorites, setFavorites] = useState([]);
@@ -15,7 +16,7 @@ function Favorites({ onAddToCart }) {
       return;
     }
 
-    fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
+    fetch(`http://${API_URL}/api/auth/favorites/details/${userId}`)
       .then(res => res.json())
       .then(data => {
         setFavorites(data);
@@ -63,7 +64,7 @@ function Favorites({ onAddToCart }) {
               <div key={product.id} className="product-card">
                 <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <img 
-                    src={product.imageUrl?.startsWith('http') ? product.imageUrl : `http://localhost:5000${product.imageUrl}`} 
+                    src={product.imageUrl?.startsWith('http') ? product.imageUrl : `http://${API_URL}${product.imageUrl}`} 
                     alt={product.name} 
                     onError={(e) => { e.target.src = 'https://placehold.co/250x200?text=Bild+saknas'; }}
                   />

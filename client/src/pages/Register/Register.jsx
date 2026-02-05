@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import StatusModal from '../../components/StatusModal/StatusModal';
 import '../../styles/FormStyles.css';
+import API_URL from '../../api';
 
 function Register({ setAdminStatus }) {
   const [firstName, setFirstName] = useState('');
@@ -21,7 +22,7 @@ function Register({ setAdminStatus }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('http://${API_URL}/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName, email, password }),

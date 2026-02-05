@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './AdminProductList.css';
+import API_URL from '../../api';
 
 function AdminProductList() {
   const [products, setProducts] = useState([]);
@@ -13,7 +14,7 @@ function AdminProductList() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/products');
+      const res = await fetch('http://${API_URL}/api/products');
       const data = await res.json();
       setProducts(data);
       setLoading(false);
@@ -26,7 +27,7 @@ function AdminProductList() {
   const handleDelete = async (id) => {
     if (!window.confirm("Radera produkt?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`http://${API_URL}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': token }
       });

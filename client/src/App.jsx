@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import API_URL from './api';
 
 // Global styling
 import './App.css';
@@ -50,7 +51,7 @@ function AppContent() {
   useEffect(() => {
     if (searchTerm.length > 1) {
       // Vi lägger till en lokal filtrering .filter() utifall backenden skickar allt
-      fetch(`http://localhost:5000/api/products?search=${searchTerm}`)
+      fetch(`http://${API_URL}/api/products?search=${searchTerm}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {

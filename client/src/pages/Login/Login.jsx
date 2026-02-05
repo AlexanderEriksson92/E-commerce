@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import StatusModal from '../../components/StatusModal/StatusModal';
 import './Login.css';
+import API_URL from '../../api';
 
 function Login({ setAdminStatus }) {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ function Login({ setAdminStatus }) {
   const handleLogin = async (e) => {
   e.preventDefault();
   try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch('http://${API_URL}/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

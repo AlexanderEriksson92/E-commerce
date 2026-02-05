@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Profile.css';
+import API_URL from '../../api';
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -18,11 +19,11 @@ function Profile() {
     const fetchProfileData = async () => {
       try {
         const [userRes, orderRes, favRes] = await Promise.all([
-          fetch('http://localhost:5000/api/auth/profile', { 
+          fetch('http://${API_URL}/api/auth/profile', { 
             headers: { 'Authorization': `Bearer ${token}` } 
           }),
-          fetch(`http://localhost:5000/api/auth/orders/${userId}`),
-          fetch(`http://localhost:5000/api/auth/favorites/details/${userId}`)
+          fetch(`http://${API_URL}/api/auth/orders/${userId}`),
+          fetch(`http://${API_URL}/api/auth/favorites/details/${userId}`)
         ]);
 
         const userData = await userRes.json();
@@ -125,7 +126,7 @@ function Profile() {
                         {order.OrderItems && order.OrderItems.map((item) => (
                           <div key={item.id} className="order-item-detail">
                             <img 
-                              src={item.Product?.imageUrl?.startsWith('http') ? item.Product.imageUrl : `http://localhost:5000${item.Product?.imageUrl}`} 
+                              src={item.Product?.imageUrl?.startsWith('http') ? item.Product.imageUrl : `http://${API_URL}${item.Product?.imageUrl}`} 
                               alt={item.Product?.name} 
                               className="order-item-img"
                             />
@@ -153,7 +154,7 @@ function Profile() {
             {favorites.slice(0, 4).map(fav => (
               <img 
                 key={fav.id} 
-                src={fav.imageUrl?.startsWith('http') ? fav.imageUrl : `http://localhost:5000${fav.imageUrl}`} 
+                src={fav.imageUrl?.startsWith('http') ? fav.imageUrl : `http://${API_URL}${fav.imageUrl}`} 
                 alt={fav.name} 
                 className="mini-fav-img" 
                 onClick={() => navigate(`/product/${fav.id}`)}

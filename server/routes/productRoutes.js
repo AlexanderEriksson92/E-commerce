@@ -8,6 +8,7 @@ const path = require('path');
 const { Op } = require('sequelize');
 
 const JWT_SECRET = 'superhemligt_nyckel';
+import API_URL from '../api';
 
 // Middleware för admin
 const verifyAdmin = (req, res, next) => {
@@ -90,7 +91,7 @@ router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
         const { name, price, description, imageUrl, inventory, discountPrice, department, categoryId, brandId, color, materialId, isSportswear } = req.body;
 
         const finalImageUrl = req.file
-            ? `http://localhost:5000/uploads/${req.file.filename}`
+            ? `http://${API_URL}/uploads/${req.file.filename}`
             : imageUrl;
 
         // Skapa produkten
@@ -135,7 +136,7 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
 
         let finalImageUrl = product.imageUrl;
         if (req.file) {
-            finalImageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+            finalImageUrl = `http://${API_URL}/uploads/${req.file.filename}`;
         } else if (imageUrl) {
             finalImageUrl = imageUrl;
         }

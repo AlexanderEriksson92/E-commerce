@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import API_URL from '../../api';
 
 function Home() {
   const [latestProducts, setLatestProducts] = useState([]);
@@ -14,7 +15,7 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch('http://${API_URL}/api/products')
       .then(res => res.json())
       .then(data => {
         setLatestProducts([...data].sort((a, b) => b.id - a.id).slice(0, 8));
@@ -28,7 +29,7 @@ function Home() {
     if (!url || url === "" || url === "null" || url === "undefined") {
       return 'https://placehold.co/400x500/EEE/999?text=Image+Missing';
     }
-    return url.startsWith('http') ? url : `http://localhost:5000${url}`;
+    return url.startsWith('http') ? url : `http://${API_URL}${url}`;
   };
 
   const ProductSlider = ({ title, products, bgColor }) => {
