@@ -28,21 +28,21 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
-// --- 3. RELATIONER (Flyttade) ---
-// Notera: Sektionen "RELATIONER" är nu borttagen härifrån eftersom 
-// de definieras i models/index.js och laddas automatiskt vid importen ovan.
-
-// 4. MIDDLEWARE
-app.use(cors());
+// 3. MIDDLEWARE
+app.use(cors({
+  origin: ['https://e-commerce-5sp4sxafa-alexander-erikssons-projects-d01d809b.vercel.app/', 'http://localhost:5173'], // Ersätt med din riktiga Vercel-länk
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 5. RUTTER
+// 4. RUTTER
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes); 
 
-// 6. ADMIN-SKAPANDE (AUTOMATISKT)
+// 5. ADMIN-SKAPANDE (AUTOMATISKT)
 async function createFirstAdmin() {
   try {
     const adminEmail = 'admin@webbshop.se';
@@ -68,7 +68,7 @@ async function createFirstAdmin() {
   }
 }
 
-// 7. STARTA SERVER
+// 6. STARTA SERVER
 const startServer = async () => {
   try {
     // Anslut till DB
