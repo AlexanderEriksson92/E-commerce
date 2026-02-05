@@ -8,7 +8,6 @@ const path = require('path');
 const { Op } = require('sequelize');
 
 const JWT_SECRET = 'superhemligt_nyckel';
-import API_URL from '../api';
 
 // Middleware för admin
 const verifyAdmin = (req, res, next) => {
