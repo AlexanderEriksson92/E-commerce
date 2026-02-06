@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import API_URL from '../../api';
+import API_URL from './api';
 
 // Global styling
 import './App.css';
