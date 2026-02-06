@@ -30,7 +30,7 @@ const app = express();
 
 // 3. MIDDLEWARE
 app.use(cors({
-  origin: ['https://e-commerce-5sp4sxafa-alexander-erikssons-projects-d01d809b.vercel.app/', 'http://localhost:5173'], // Ersätt med din riktiga Vercel-länk
+  origin: ['https://e-commerce-5sp4sxafa-alexander-erikssons-projects-d01d809b.vercel.app', 'http://localhost:5173'], 
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
@@ -85,7 +85,7 @@ const startServer = async () => {
     const PORT = process.env.PORT || 5000;
     
     app.listen(PORT, () => {
-      console.log(`🚀 Servern körs på http://localhost:${PORT}`);
+      console.log(`🚀 Servern körs på port ${PORT}`);
     });
   } catch (error) {
     console.error('❌ Kunde inte starta servern:', error);
