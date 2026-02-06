@@ -30,7 +30,11 @@ const app = express();
 
 // 3. MIDDLEWARE
 app.use(cors({
-  origin: ['https://e-commerce-5sp4sxafa-alexander-erikssons-projects-d01d809b.vercel.app', 'http://localhost:5173'], 
+  origin: [
+    'https://e-commerce-eight-ebon-76.vercel.app', 
+    'https://e-commerce-5sp4sxafa-alexander-erikssons-projects-d01d809b.vercel.app', 
+    'http://localhost:5173'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
