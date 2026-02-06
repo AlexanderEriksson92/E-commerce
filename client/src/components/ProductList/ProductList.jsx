@@ -78,7 +78,7 @@ function ProductList({ refreshFavorites }) {
     if (url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${width}&h=${height}&fit=cover&errorimg=${encodeURIComponent(placeholder)}`;
     }
-    return `http://${API_URL}${url}`;
+    return `${API_URL}${url}`;
   };
 
   useEffect(() => {
@@ -88,13 +88,13 @@ function ProductList({ refreshFavorites }) {
   }, [queryDept, location.state]);
 
   useEffect(() => {
-    fetch('http://${API_URL}/api/products')
+    fetch(`${API_URL}/api/products`)
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(err => console.error("Fetch error:", err));
 
     if (userId) {
-      fetch(`http://${API_URL}/api/auth/favorites/details/${userId}`)
+      fetch(`${API_URL}/api/auth/favorites/details/${userId}`)
         .then(res => res.json())
         .then(data => { if (Array.isArray(data)) setFavorites(data.map(f => f.id)); });
     }
@@ -106,7 +106,7 @@ function ProductList({ refreshFavorites }) {
       return;
     }
     try {
-      const res = await fetch('http://${API_URL}/api/auth/favorites/toggle', {
+      const res = await fetch(`${API_URL}/api/auth/favorites/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, userId })

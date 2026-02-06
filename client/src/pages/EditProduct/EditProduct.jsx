@@ -32,9 +32,9 @@ function EditProduct() {
     const fetchData = async () => {
       try {
         const [bRes, cRes, pRes] = await Promise.all([
-          fetch('http://${API_URL}/api/admin/brands'),
-          fetch('http://${API_URL}/api/admin/categories'),
-          fetch(`http://${API_URL}/api/products/${id}`)
+          fetch(`${API_URL}/api/admin/brands`),
+          fetch(`${API_URL}/api/admin/categories`),
+          fetch(`${API_URL}/api/products/${id}`)
         ]);
         const brandsData = await bRes.json();
         const catsData = await cRes.json();
@@ -76,7 +76,7 @@ function EditProduct() {
     else formData.append('imageUrl', currentImage);
 
     try {
-      const response = await fetch(`http://${API_URL}/api/products/${id}`, {
+      const response = await fetch(`${API_URL}/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Authorization': token },
         body: formData,

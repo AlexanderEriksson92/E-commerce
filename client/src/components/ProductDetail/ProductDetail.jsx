@@ -22,19 +22,19 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
     if (url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${width}&fit=cover&errorimg=${encodeURIComponent(placeholder)}`;
     }
-    return `http://${API_URL}${url}`;
+    return `${API_URL}${url}`;
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setLoading(true);
-    fetch(`http://${API_URL}/api/products/${id}`)
+    fetch(`${API_URL}/api/products/${id}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
         setLoading(false);
 
-        fetch('http://${API_URL}/api/products')
+        fetch(`${API_URL}/api/products`)
           .then(res => res.json())
           .then(all => {
             const filtered = all
@@ -46,7 +46,7 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
       }).catch(() => setLoading(false));
 
     if (userId) {
-      fetch(`http://${API_URL}/api/auth/favorites/details/${userId}`)
+      fetch(`${API_URL}/api/auth/favorites/details/${userId}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) setIsFavorite(data.some(f => f.id === parseInt(id)));
@@ -60,7 +60,7 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
       return;
     }
     try {
-      const res = await fetch('http://${API_URL}/api/auth/favorites/toggle', {
+      const res = await fetch(`${API_URL}/api/auth/favorites/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: id, userId })

@@ -14,7 +14,7 @@ function AdminProductList() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://${API_URL}/api/products');
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       setProducts(data);
       setLoading(false);
@@ -27,7 +27,7 @@ function AdminProductList() {
   const handleDelete = async (id) => {
     if (!window.confirm("Radera produkt?")) return;
     try {
-      const res = await fetch(`http://${API_URL}/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': token }
       });

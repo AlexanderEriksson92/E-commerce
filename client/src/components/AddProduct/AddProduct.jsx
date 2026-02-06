@@ -40,8 +40,8 @@ function AddProduct() {
 
   const fetchFilters = async () => {
     try {
-      const bRes = await fetch('http://${API_URL}/api/admin/brands');
-      const cRes = await fetch('http://${API_URL}/api/admin/categories');
+      const bRes = await fetch(`${API_URL}/api/admin/brands`);
+      const cRes = await fetch(`${API_URL}/api/admin/categories`);
       if (bRes.ok) setAvailableBrands(await bRes.json());
       if (cRes.ok) setAvailableCategories(await cRes.json());
     } catch (err) { console.error(err); }
@@ -57,7 +57,7 @@ function AddProduct() {
   const handleQuickAdd = async (type, value, setter, toggle) => {
     if (!value) return;
     try {
-      const res = await fetch(`http://${API_URL}/api/admin/${type}`, {
+      const res = await fetch(`${API_URL}/api/admin/${type}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ function AddProduct() {
       return;
     }
 
-    const response = await fetch('http://${API_URL}/api/products', {
+    const response = await fetch(`${API_URL}/api/products`, {
       method: 'POST',
       headers: { 'Authorization': localStorage.getItem('token') },
       body: formData,

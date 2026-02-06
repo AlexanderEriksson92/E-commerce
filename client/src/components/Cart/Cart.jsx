@@ -17,7 +17,7 @@ function Cart({ cartItems = [], onRemove, onClear, setGlobalModal }) {
   }));
 
   try {
-    const response = await fetch('http://${API_URL}/api/auth/checkout', {
+    const response = await fetch(`${API_URL}/api/auth/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -69,7 +69,7 @@ function Cart({ cartItems = [], onRemove, onClear, setGlobalModal }) {
                   <div className="cart-item-left">
                     <Link to={`/product/${item.id}`}>
                       <img 
-                        src={item.imageUrl?.startsWith('http') ? item.imageUrl : `http://${API_URL}${item.imageUrl}`} 
+                        src={item.imageUrl?.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}`}
                         alt={item.name} 
                         className="cart-item-img"
                       />

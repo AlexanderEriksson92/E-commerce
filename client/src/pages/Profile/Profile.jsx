@@ -19,11 +19,11 @@ function Profile() {
     const fetchProfileData = async () => {
       try {
         const [userRes, orderRes, favRes] = await Promise.all([
-          fetch('http://${API_URL}/api/auth/profile', { 
+          fetch(`${API_URL}/api/auth/profile`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
           }),
-          fetch(`http://${API_URL}/api/auth/orders/${userId}`),
-          fetch(`http://${API_URL}/api/auth/favorites/details/${userId}`)
+          fetch(`${API_URL}/api/auth/orders/${userId}`),
+          fetch(`${API_URL}/api/auth/favorites/details/${userId}`)
         ]);
 
         const userData = await userRes.json();
@@ -126,7 +126,7 @@ function Profile() {
                         {order.OrderItems && order.OrderItems.map((item) => (
                           <div key={item.id} className="order-item-detail">
                             <img 
-                              src={item.Product?.imageUrl?.startsWith('http') ? item.Product.imageUrl : `http://${API_URL}${item.Product?.imageUrl}`} 
+                              src={item.Product?.imageUrl?.startsWith('http') ? item.Product.imageUrl : `${API_URL}${item.Product?.imageUrl}`} 
                               alt={item.Product?.name} 
                               className="order-item-img"
                             />
@@ -154,7 +154,7 @@ function Profile() {
             {favorites.slice(0, 4).map(fav => (
               <img 
                 key={fav.id} 
-                src={fav.imageUrl?.startsWith('http') ? fav.imageUrl : `http://${API_URL}${fav.imageUrl}`} 
+                src={fav.imageUrl?.startsWith('http') ? fav.imageUrl : `${API_URL}${fav.imageUrl}`} 
                 alt={fav.name} 
                 className="mini-fav-img" 
                 onClick={() => navigate(`/product/${fav.id}`)}

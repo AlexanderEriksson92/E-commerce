@@ -11,8 +11,8 @@ function ManageShop() {
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
-        const bRes = await fetch('http://${API_URL}/api/admin/brands');
-        const cRes = await fetch('http://${API_URL}/api/admin/categories');
+        const bRes = await fetch(`${API_URL}/api/admin/brands`);
+        const cRes = await fetch(`${API_URL}/api/admin/categories`);
         setBrands(await bRes.json());
         setCategories(await cRes.json());
     };
@@ -21,7 +21,7 @@ function ManageShop() {
         const value = newName[type];
         if (!value) return;
         try {
-            const res = await fetch(`http://${API_URL}/api/admin/${type}`, {
+            const res = await fetch(`${API_URL}/api/admin/${type}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': token },
                 body: JSON.stringify({ name: value })
@@ -36,7 +36,7 @@ function ManageShop() {
     const handleDelete = async (type, id) => {
         if (!window.confirm("Ta bort?")) return;
         try {
-            await fetch(`http://${API_URL}/api/admin/${type}/${id}`, {
+            await fetch(`${API_URL}/api/admin/${type}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': token }
             });

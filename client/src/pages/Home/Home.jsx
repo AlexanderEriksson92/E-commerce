@@ -15,7 +15,7 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    fetch('http://${API_URL}/api/products')
+    fetch(`${API_URL}/api/products`)
       .then(res => res.json())
       .then(data => {
         setLatestProducts([...data].sort((a, b) => b.id - a.id).slice(0, 8));
