@@ -48,6 +48,7 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: bold;
+  display: inline-block;
 }
 
 .stock-low { background: #fff3cd; color: #856404; } /* Varning gul */
@@ -73,6 +74,7 @@
   font-size: 0.85rem;
   margin-right: 5px;
   transition: opacity 0.2s;
+  display: inline-block;
 }
 
 .action-btn:hover { opacity: 0.8; }

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-// Importera modeller från din index-fil för att få med alla relationer
-const { Product, Category, Brand, Material, Color, ProductVariant } = require('../models');
+const { Product, Category, Brand, Material, Color, ProductVariant, ProductImage } = require('../models');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
@@ -33,17 +32,14 @@ const upload = multer({ storage: storage });
 
 // --- RUTTER ---
 
-// 1. Hämta produkter (inkluderar Material & Variants)
+// 1. Hämta alla produkter (med huvudbild)
 router.get('/', async (req, res) => {
     try {
         const { department } = req.query;
         let whereClause = {};
 
         if (department === 'Sport') {
-            // Vi använder [Op.or] för att täcka alla baser (true, 1, eller strängen '1')
-            whereClause.isSportswear = {
-                [Op.or]: [true, 1, '1']
-            };
+            whereClause.isSportswear = { [Op.or]: [true, 1, '1'] };
         } else if (department) {
             whereClause.department = department;
         }
@@ -55,7 +51,13 @@ router.get('/', async (req, res) => {
                 { model: Brand, attributes: ['name'] },
                 { model: Material, attributes: ['name'] },
                 { model: Color, attributes: ['name'] },
-                { model: ProductVariant, as: 'variants' }
+                { model: ProductVariant, as: 'variants' },
+                {
+                    model: ProductImage,
+                    as: 'images',
+                    where: { isMain: true }, // Vi vill bara ha huvudbilden i listan
+                    required: false
+                }
             ]
         });
         res.json(products);
@@ -65,7 +67,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 2. Hämta specifik produkt
+// 2. Hämta specifik produkt (med ALLA bilder)
 router.get('/:id', async (req, res) => {
     try {
         const product = await Product.findByPk(req.params.id, {
@@ -74,7 +76,8 @@ router.get('/:id', async (req, res) => {
                 { model: Brand, attributes: ['name'] },
                 { model: Material, attributes: ['name'] },
                 { model: Color, attributes: ['name'] },
-                { model: ProductVariant, as: 'variants' }
+                { model: ProductVariant, as: 'variants' },
+                { model: ProductImage, as: 'images' } // Här hämtas alla bilder (upp till 5)
             ]
         });
         if (product) res.json(product);
@@ -126,27 +129,18 @@ router.post('/', verifyAdmin, upload.single('imageFile'), async (req, res) => {
 });
 
 // 4. Redigera produkt
-router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => {
+router.put('/:id', verifyAdmin, upload.array('imageFiles', 5), async (req, res) => {
     try {
-        const { name, price, description, imageUrl, inventory, discountPrice, categoryId, brandId, materialId, department, color, isSportswear } = req.body;
+        const { name, price, description, inventory, discountPrice, categoryId, brandId, materialId, department, color, isSportswear, mainImageIndex, existingImages } = req.body;
         const product = await Product.findByPk(req.params.id);
 
-        if (!product) return res.status(404).json({ error: "Hittade inte" });
+        if (!product) return res.status(404).json({ error: "Hittades inte" });
 
-        let finalImageUrl = product.imageUrl;
-
-        if (req.file) {
-            // Spara bara stigen till filen, inte hela domännamnet
-            finalImageUrl = `/uploads/${req.file.filename}`;
-        } else if (imageUrl) {
-            finalImageUrl = imageUrl;
-        }
-
+        // 1. Uppdatera basinfo
         await product.update({
             name: name || product.name,
             price: price || product.price,
             description: description || product.description,
-            imageUrl: finalImageUrl,
             discountPrice: discountPrice === '' || discountPrice === 'null' ? null : discountPrice,
             categoryId: categoryId || product.categoryId,
             brandId: brandId || product.brandId,
@@ -156,13 +150,41 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
             isSportswear: isSportswear !== undefined ? isSportswear === 'true' : product.isSportswear
         });
 
-        // Uppdatera lager (Varianter)
+        // 2. Hantera bilder (Kombinera URL:er och Filer)
+        // Vi rensar gamla kopplingar för att skriva det nya tillståndet från EditProduct
+        await ProductImage.destroy({ where: { productId: product.id } });
+
+        let allImagePaths = [];
+
+        // Lägg till URL-bilder först (de som redan fanns eller lades till via länk)
+        if (existingImages) {
+            const urls = Array.isArray(existingImages) ? existingImages : [existingImages];
+            urls.forEach(url => allImagePaths.push(url));
+        }
+
+        // Lägg till nya uppladdade filer
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => allImagePaths.push(`/uploads/${file.filename}`));
+        }
+
+        // Skapa poster för alla bilder och använd mainImageIndex för att sätta isMain
+        if (allImagePaths.length > 0) {
+            const imageRecords = allImagePaths.map((path, index) => ({
+                productId: product.id,
+                imageUrl: path,
+                isMain: index === parseInt(mainImageIndex || 0)
+            }));
+            await ProductImage.bulkCreate(imageRecords);
+            
+            // Valfritt: Uppdatera även huvudtabellens imageUrl för bakåtkompatibilitet
+            const mainImg = imageRecords.find(r => r.isMain) || imageRecords[0];
+            await product.update({ imageUrl: mainImg.imageUrl });
+        }
+
+        // 3. Uppdatera lager (Varianter)
         if (inventory) {
             const invObj = typeof inventory === 'string' ? JSON.parse(inventory) : inventory;
-
-            // För enkelhetens skull i en admin-vy: radera gamla varianter och lägg till nya
             await ProductVariant.destroy({ where: { productId: product.id } });
-
             const variantData = Object.entries(invObj).map(([size, stock]) => ({
                 size,
                 stock: parseInt(stock),
@@ -173,6 +195,7 @@ router.put('/:id', verifyAdmin, upload.single('imageFile'), async (req, res) => 
 
         res.json(product);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });

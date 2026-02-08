@@ -1,16 +1,26 @@
+// 1. Importera sequelize-instansen (kolla att sökvägen stämmer!)
+const sequelize = require('../config/db'); 
+const { DataTypes } = require('sequelize');
+
+// 2. Importera alla modeller
+// Om de andra modellerna kraschar när de anropas som funktioner, 
+// krävs de förmodligen bara rakt av:
 const Product = require('./Product');
 const Category = require('./Category');
 const Brand = require('./Brand');
 const Material = require('./Material');
-const Color = require('./Color'); // TILLAGD
+const Color = require('./Color'); 
 const ProductVariant = require('./ProductVariant');
 const User = require('./User');
 const Favorite = require('./Favorite');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
 
-// --- RELATIONER ---
+// 3. För ProductImage (eftersom vi VET att den är en funktion):
+const ProductImage = require('./ProductImage')(sequelize, DataTypes);
 
+// --- RELATIONER ---
+// (Samma kod som förut...)
 Category.hasMany(Product, { foreignKey: 'categoryId' });
 Product.belongsTo(Category, { foreignKey: 'categoryId' });
 
@@ -20,8 +30,11 @@ Product.belongsTo(Brand, { foreignKey: 'brandId' });
 Material.hasMany(Product, { foreignKey: 'materialId' });
 Product.belongsTo(Material, { foreignKey: 'materialId' });
 
-Color.hasMany(Product, { foreignKey: 'colorId' }); // TILLAGD
-Product.belongsTo(Color, { foreignKey: 'colorId' }); // TILLAGD
+Color.hasMany(Product, { foreignKey: 'colorId' }); 
+Product.belongsTo(Color, { foreignKey: 'colorId' }); 
+
+Product.hasMany(ProductImage, { foreignKey: 'productId', as: 'images', onDelete: 'CASCADE' });
+ProductImage.belongsTo(Product, { foreignKey: 'productId' });
 
 Product.hasMany(ProductVariant, { foreignKey: 'productId', as: 'variants', onDelete: 'CASCADE' });
 ProductVariant.belongsTo(Product, { foreignKey: 'productId' });
@@ -44,8 +57,9 @@ module.exports = {
   Category,
   Brand,
   Material,
-  Color, // NU DEFINIERAD
+  Color, 
   ProductVariant,
+  ProductImage,
   User,
   Favorite,
   Order,

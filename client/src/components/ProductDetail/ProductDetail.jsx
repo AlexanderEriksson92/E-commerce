@@ -4,7 +4,7 @@ import StatusModal from '../StatusModal/StatusModal';
 import './ProductDetail.css';
 import API_URL from '../../api';
 
-function ProductDetail({ onAddToCart, refreshFavorites }) {
+function ProductDetail({ onAddToCart, refreshFavorites, isAdmin }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -14,7 +14,11 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [modal, setModal] = useState({ open: false, msg: '', title: '', type: '', action: null });
 
+  // State för att styra vilken bild som visas i den stora rutan
+  const [activeImage, setActiveImage] = useState('');
+
   const userId = localStorage.getItem('userId');
+
 
   const getOptimizedImage = (url, width = 800) => {
     const placeholder = `https://placehold.co/${width}x${Math.round(width * 1.3)}/f0f0f0/999999?text=Bild+saknas`;
@@ -32,8 +36,18 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
       .then(res => res.json())
       .then(data => {
         setProduct(data);
+
+        // Sätt första bilden som visas
+        if (data.images && data.images.length > 0) {
+          const mainImg = data.images.find(img => img.isMain) || data.images[0];
+          setActiveImage(mainImg.imageUrl);
+        } else if (data.imageUrl) {
+          setActiveImage(data.imageUrl);
+        }
+
         setLoading(false);
 
+        // Hämta liknande produkter baserat på kategori
         fetch(`${API_URL}/api/products`)
           .then(res => res.json())
           .then(all => {
@@ -75,9 +89,14 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
   if (loading) return <div className="loading">Laddar...</div>;
   if (!product) return <div className="error">Hittades inte.</div>;
 
-  // Räknar ut totalt lager från nya variants-tabellen
-  const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
-  const isOut = totalStock <= 0;
+  // Logik för att dölja slutsålda storlekar helt
+  const availableVariants = product.variants?.filter(v => v.stock > 0) || [];
+  const isOut = availableVariants.length === 0;
+
+  // Samla alla bilder till galleriet
+  const allImages = product.images && product.images.length > 0
+    ? product.images.map(img => img.imageUrl)
+    : (product.imageUrl ? [product.imageUrl] : []);
 
   return (
     <div className="product-detail-container">
@@ -86,17 +105,38 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
       </div>
 
       <div className="main-content-card">
+        {/* VÄNSTER SIDA: BILDGALLERI */}
+        {/* VÄNSTER SIDA: BILDGALLERI */}
         <div className="image-side">
-          <img
-            src={getOptimizedImage(product.imageUrl)}
-            alt={product.name}
-            className={isOut ? 'out-img' : ''}
-            onError={(e) => { e.target.src = `https://placehold.co/600x800/f0f0f0/999999?text=Bild+saknas`; }}
-          />
-          {isOut && <div className="soldout-overlay"><span>SLUTSÅLD</span></div>}
-          {product.discountPrice && !isOut && <div className="sale-tag">SALE</div>}
+          <div className="gallery-container">
+            {/* Huvudbild - Stor och högupplöst */}
+            <div className="main-image-display">
+              <img
+                src={getOptimizedImage(activeImage, 1200)} // Ökad bredd för bättre upplösning
+                alt={product.name}
+                className={isOut ? 'out-img' : ''}
+              />
+              {isOut && <div className="soldout-overlay"><span>SLUTSÅLD</span></div>}
+            </div>
+
+            {/* Miniatyrer - Placeras under på en vågrät rad */}
+            {allImages.length > 1 && (
+              <div className="thumbnail-strip">
+                {allImages.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    className={`thumb-item ${activeImage === imgUrl ? 'active' : ''}`}
+                    onClick={() => setActiveImage(imgUrl)}
+                  >
+                    <img src={getOptimizedImage(imgUrl, 200)} alt={`Vy ${idx + 1}`} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
+        {/* HÖGER SIDA: PRODUKTINFO */}
         <div className="info-side">
           <span className="dept-label">{product.department}</span>
           <span className="spec-label" style={{ fontSize: '14px', marginBottom: '5px', display: 'block' }}>
@@ -108,15 +148,12 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
           <div className="product-specs-container">
             <div className="spec-row">
               <span className="spec-label">COLOR:</span>
-              <span className="spec-value">
-                {product.Color?.name || product.color || 'Klassisk'}
-              </span>
+              <span className="spec-value">{product.Color?.name || product.color || 'Klassisk'}</span>
             </div>
             <div className="spec-row">
               <span className="spec-label">MATERIAL:</span>
               <span className="spec-value">{product.Material?.name || 'Premium Mix'}</span>
             </div>
-
             {product.isSportswear && (
               <div className="sport-badge">
                 <span className="bolt-icon">⚡</span> TRÄNINGSKLÄDER
@@ -139,10 +176,9 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
             <>
               <span className="label">VÄLJ STORLEK:</span>
               <div className="size-grid">
-                {product.variants?.map(v => (
+                {availableVariants.map(v => (
                   <button
                     key={v.id}
-                    disabled={v.stock <= 0}
                     className={`size-btn ${selectedSize === v.size ? 'active' : ''}`}
                     onClick={() => setSelectedSize(v.size)}
                   >
@@ -165,10 +201,17 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
             <button onClick={handleFavoriteToggle} className="fav-inline-btn">
               {isFavorite ? '❤️' : '🤍'}
             </button>
+
+            {isAdmin && (
+              <button className="admin-edit-btn" onClick={() => navigate(`/admin/edit-product/${id}`)}>
+                EDIT PRODUCT
+              </button>
+            )}
           </div>
         </div>
       </div>
 
+      {/* LIKNANDE PRODUKTER - NU KOMPLETT ÅTERINFÖRD */}
       {similarProducts.length > 0 && (
         <div className="similar-section">
           <h2 className="similar-title">DU KANSKE OCKSÅ GILLAR</h2>
@@ -176,7 +219,7 @@ function ProductDetail({ onAddToCart, refreshFavorites }) {
             {similarProducts.map(p => (
               <Link key={p.id} to={`/product/${p.id}`} className="product-card-new">
                 <img
-                  src={getOptimizedImage(p.imageUrl, 400)}
+                  src={getOptimizedImage(p.images?.[0]?.imageUrl || p.imageUrl, 400)}
                   alt={p.name}
                   onError={(e) => { e.target.src = `https://placehold.co/400x500/f0f0f0/999999?text=Bild+saknas`; }}
                 />

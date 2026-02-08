@@ -35,74 +35,93 @@ function AdminProductList() {
     } catch (err) { console.error(err); }
   };
 
-  // Hjälpfunktion för att räkna ut totalt lager från inventory-objektet
-  const getTotalStock = (inventory) => {
-    if (!inventory) return 0;
-    return Object.values(inventory).reduce((a, b) => a + Number(b), 0);
+  const getTotalStock = (variants) => {
+    if (!variants || !Array.isArray(variants)) return 0;
+    return variants.reduce((sum, v) => sum + Number(v.stock), 0);
+  };
+
+  const getStockStatusClass = (total) => {
+    if (total === 0) return 'stock-out';
+    if (total < 10) return 'stock-low';
+    return 'stock-ok';
   };
 
   if (loading) return <div className="container">Laddar...</div>;
 
   return (
     <div className="container" style={{ marginTop: '80px', maxWidth: '1400px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', paddingBottom: '20px', borderBottom: '1px solid #eee' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <div>
-          <h1 style={{ fontSize: '14px', fontWeight: '900', letterSpacing: '3px', margin: 0 }}>INVENTORY MANAGEMENT</h1>
-          <p style={{ color: '#999', fontSize: '11px', marginTop: '5px' }}>TOTAL: {products.length} MODELS</p>
+          <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '2px', margin: 0 }}>INVENTORY</h1>
+          <p style={{ color: '#999', fontSize: '12px' }}>{products.length} MODELS IN CATALOG</p>
         </div>
-        <Link to="/admin/add-product" style={addBtnStyle}>+ ADD NEW PRODUCT</Link>
+        <Link to="/admin/add-product" className="action-btn" style={{ backgroundColor: '#000', color: '#fff', textDecoration: 'none', padding: '10px 20px' }}>
+          + ADD PRODUCT
+        </Link>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="admin-list-container">
+        <table className="admin-table">
           <thead>
-            <tr style={tableHeadStyle}>
-              <th style={{ textAlign: 'left', padding: '15px 0' }}>PRODUCT</th>
-              <th>PRICE</th>
-              <th>CATEGORY / BRAND</th>
-              <th>STOCK STATUS</th>
-              <th style={{ textAlign: 'right' }}>ACTIONS</th>
+            <tr>
+              <th style={{ textAlign: 'left' }}>Product Details</th>
+              <th>Price</th>
+              <th>Category / Brand</th>
+              <th>Stock Status</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.map(p => {
-              const totalStock = getTotalStock(p.inventory);
+              const variants = p.variants || [];
+              const totalStock = getTotalStock(variants);
+
               return (
-                <tr key={p.id} style={rowStyle}>
-                  <td style={{ padding: '20px 0', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <img
-                      src={p.imageUrl || 'https://placehold.co/400x500/EEE/999?text=No+Image'}
-                      alt=""
-                      style={thumbStyle}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/400x500/EEE/999?text=No+Image';
-                      }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: '800', fontSize: '12px' }}>{p.name.toUpperCase()}</div>
-                      <div style={{ fontSize: '10px', color: '#bbb' }}>ID: #{p.id}</div>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: '12px' }}>
-                    {p.discountPrice ? (
-                      <span style={{ color: '#e74c3c', fontWeight: '800' }}>{p.discountPrice} SEK</span>
-                    ) : <span>{p.price} SEK</span>}
-                  </td>
-                  <td style={{ fontSize: '11px', color: '#666' }}>
-                    {p.Category?.name || 'No Cat'} / {p.Brand?.name || 'No Brand'}
-                  </td>
+                <tr key={p.id}>
                   <td>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: totalStock === 0 ? '#ff4d4d' : '#2ecc71' }}>
-                      {totalStock} UNITS IN STOCK
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <img
+                        src={p.imageUrl?.startsWith('http') ? p.imageUrl : `${API_URL}${p.imageUrl}`}
+                        alt={p.name}
+                        className="admin-prod-img"
+                        onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=Missing'; }}
+                      />
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13px' }}>{p.name.toUpperCase()}</div>
+                        <div style={{ fontSize: '10px', color: '#999' }}>REF: #{p.id}</div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '9px', color: '#aaa' }}>
-                      {Object.entries(p.inventory || {}).map(([size, val]) => `${size}:${val}`).join(' ')}
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <div style={{ fontWeight: '600' }}>
+                      {p.discountPrice ? (
+                        <>
+                          <span style={{ color: '#dc3545' }}>{p.discountPrice} kr</span>
+                          <div style={{ fontSize: '10px', textDecoration: 'line-through', color: '#aaa' }}>{p.price} kr</div>
+                        </>
+                      ) : (
+                        <span>{p.price} kr</span>
+                      )}
+                    </div>
+                  </td>
+                  <td style={{ textAlign: 'center', fontSize: '12px', color: '#555' }}>
+                    {p.Category?.name || '—'} / {p.Brand?.name || '—'}
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className={`stock-badge ${getStockStatusClass(totalStock)}`}>
+                      {totalStock} UNIT{totalStock !== 1 ? 'S' : ''}
+                    </span>
+                    <div style={{ fontSize: '10px', color: '#999', marginTop: '4px' }}>
+                      {variants.map(v => `${v.size}:${v.stock}`).join(' | ')}
                     </div>
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <Link to={`/admin/edit-product/${p.id}`} style={actionBtnStyle}>EDIT</Link>
-                    <button onClick={() => handleDelete(p.id)} style={{ ...actionBtnStyle, color: '#ff4d4d' }}>DELETE</button>
+                    <Link to={`/admin/edit-product/${p.id}`} className="action-btn btn-edit" style={{ textDecoration: 'none' }}>
+                      EDIT
+                    </Link>
+                    <button onClick={() => handleDelete(p.id)} className="action-btn btn-delete">
+                      DELETE
+                    </button>
                   </td>
                 </tr>
               );
@@ -113,12 +132,5 @@ function AdminProductList() {
     </div>
   );
 }
-
-// Styles
-const addBtnStyle = { backgroundColor: '#000', color: '#fff', padding: '12px 25px', fontSize: '10px', fontWeight: '900', textDecoration: 'none', letterSpacing: '1px' };
-const tableHeadStyle = { fontSize: '10px', color: '#aaa', borderBottom: '2px solid #000', textAlign: 'left', letterSpacing: '1px' };
-const rowStyle = { borderBottom: '1px solid #eee' };
-const thumbStyle = { width: '50px', height: '65px', objectFit: 'cover', backgroundColor: '#f5f5f5' };
-const actionBtnStyle = { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', fontWeight: '900', marginLeft: '15px', textDecoration: 'none', color: '#000' };
 
 export default AdminProductList;

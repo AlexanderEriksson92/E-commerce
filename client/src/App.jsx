@@ -147,7 +147,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} isAdmin={isAdmin} />} />
           <Route path="/login" element={<Login setAdminStatus={setIsAdmin} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
