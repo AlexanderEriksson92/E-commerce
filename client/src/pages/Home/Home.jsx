@@ -25,7 +25,6 @@ function Home() {
   }, []);
 
   const getImg = (url) => {
-    // Om url saknas, är tom eller är strängen "null" -> visa placeholder
     if (!url || url === "" || url === "null" || url === "undefined") {
       return 'https://placehold.co/400x500/EEE/999?text=Image+Missing';
     }
@@ -54,6 +53,12 @@ function Home() {
                       src={getImg(p.imageUrl)}
                       alt={p.name}
                       className="product-img-slide"
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover', 
+                        objectPosition: 'center' 
+                      }}
                       onError={(e) => { e.target.src = 'https://placehold.co/400x500/EEE/999?text=Error+Loading'; }}
                     />
                   </div>
@@ -82,7 +87,6 @@ function Home() {
         </div>
       )}
 
-      {/* NY SLIMMAD REA-HEADER (Ersätter gamla hero-header) */}
       <header className="sale-mini-header" onClick={() => navigate('/products?sale=true')}>
         <div className="sale-header-content">
           <h2 className="sale-title-mini">SEASON SALE</h2>
@@ -91,7 +95,6 @@ function Home() {
       </header>
 
       <div className="container-fixed">
-        {/* GRID MED 4 KORT (Men, Women, Kids, Sport) */}
         <div className="gender-grid">
           {['Men', 'Women', 'Kids', 'Sport'].map((gender) => {
             const imgMap = {
@@ -121,10 +124,8 @@ function Home() {
         </div>
       </div>
 
-      {/* 1. Latest Drops Slider */}
       <ProductSlider title="LATEST DROPS" products={latestProducts} bgColor="#f4f4f2" />
 
-      {/* 2. THE ORIGINALS */}
       <section className="originals-full-width">
         <div className="container-fixed">
           <div className="originals-grid">
@@ -145,10 +146,8 @@ function Home() {
         </div>
       </section>
 
-      {/* 3. Steal The Look Slider */}
       <ProductSlider title="STEAL THE LOOK" products={popularProducts} bgColor="#dad5ce" />
 
-      {/* 4. SPORT SECTION */}
       <section className="sport-section">
         <div className="container-fixed">
           <div className="originals-grid sport-reverse">

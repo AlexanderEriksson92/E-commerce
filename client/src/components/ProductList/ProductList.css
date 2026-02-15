@@ -3,7 +3,6 @@
   width: 100%;
 }
 
-/* Ser till att hela blocket (Header + Puffar) stannar vid 1400px */
 .list-main-content-boxed {
   max-width: 1400px;
   margin: 0 auto;
@@ -12,42 +11,10 @@
   flex-direction: column;
 }
 
-/* Specifik kontroll för headern */
-.collection-header-group {
-  width: 100%;
-  max-width: 1400px; /* Tvingar maxbredd */
-  margin: 0 auto;    /* Centrerar */
-  display: flex;
-  flex-direction: column;
-  gap: 25px;         /* Mellanrummet du bad om tidigare */
-}
-
-.hero-viewport {
-  width: 100%;
-  height: 60vh;
-  position: relative;
-  overflow: hidden;
-  background-color: #111;
-  /* Ingen extra bredd här, den ärver från föräldern */
-}
-
-/* Om du vill att videon/bilden ska behålla sin proportion men stanna vid 1400px */
-.hero-asset {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Tar bort marginaler och titlar som vi dolt i JSX */
-.product-list-header {
-  display: none; 
-}
-
 .product-list-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 0;
 }
 
 .product-link {
@@ -56,32 +23,17 @@
   display: block;
 }
 
-.product-list-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
+/* --- 2. COLLECTION HEADER & HERO --- */
 .collection-header-group {
   width: 100%;
   display: flex;
   flex-direction: column;
-  /* Här styr du mellanrummet mellan den stora bilden och de 4 puffarna */
   gap: 3px; 
 }
 
-.dept-title, .sale-title {
-  font-size: 1.5rem;
-  letter-spacing: 3px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.sale-title { color: #ff4d4d; }
-
-/* --- 2. COLLECTION HEADER (STOR VIDEO/BILD) --- */
 .hero-viewport {
   width: 100%;
-  height: 60vh; /* Justerad för att inte bli för inzoomad */
+  height: 60vh;
   position: relative;
   overflow: hidden;
   background-color: #111;
@@ -111,9 +63,10 @@
   font-weight: 900;
   letter-spacing: 12px;
   text-transform: uppercase;
+  text-align: center;
 }
 
-/* --- 3. PROMO QUAD GRID (DE 4 BILDERNA) --- */
+/* --- 3. PROMO QUAD GRID (PUFFAR) --- */
 .promo-quad-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -126,6 +79,7 @@
   position: relative;
   background-size: cover;
   background-position: center;
+  cursor: pointer;
 }
 
 .quad-overlay {
@@ -135,6 +89,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.quad-item:hover .quad-overlay {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .quad-overlay span {
@@ -145,7 +104,21 @@
   border-bottom: 2px solid #fff;
 }
 
-/* --- 4. TOOLBAR & FILTER --- */
+/* --- 4. TOOLBAR & FILTER PANEL --- */
+.product-list-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dept-title, .sale-title {
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sale-title { color: #ff4d4d; }
+
 .product-toolbar {
   display: flex;
   justify-content: space-between;
@@ -169,6 +142,19 @@
   padding: 30px;
   background: #f9f9f9;
   margin-bottom: 40px;
+  border-radius: 4px;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-section label {
+  display: block;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
 }
 
 .search-section input {
@@ -178,6 +164,7 @@
   border: none;
   border-bottom: 2px solid #ddd;
   background: transparent;
+  outline: none;
 }
 
 .category-grid {
@@ -194,8 +181,11 @@
   cursor: pointer;
   font-size: 10px;
   text-transform: uppercase;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
+.cat-btn:hover { border-color: #000; }
 .cat-btn.active { background: #000; color: #fff; border-color: #000; }
 
 /* --- 5. PRODUKT GRID --- */
@@ -205,25 +195,88 @@
   gap: 40px 15px;
 }
 
-.product-card-new { position: relative; }
+.product-card-new { 
+  position: relative; 
+  transition: transform 0.3s ease;
+}
 
 .list-image-container {
   width: 100%;
-  aspect-ratio: 5 / 6.5;
+  height: 480px; /* Desktop fast höjd */
   overflow: hidden;
   margin-bottom: 15px;
+  background-color: #f5f5f5;
 }
 
-.list-image-container img { width: 100%; height: 100%; object-fit: cover; }
+.list-image-container img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  transition: transform 0.5s ease;
+}
 
-.list-brand { font-weight: 900; font-size: 11px; text-transform: uppercase; }
-.list-product-name { font-size: 13px; color: #555; }
+.product-card-new:hover .list-image-container img {
+  transform: scale(1.02);
+}
 
+.list-brand { font-weight: 900; font-size: 11px; text-transform: uppercase; display: block; }
+.list-product-name { font-size: 13px; color: #555; margin: 4px 0; }
 .price { font-size: 13px; font-weight: 700; margin-top: 5px; }
 .sale-price { color: #ff4d4d; margin-right: 8px; }
 .old-price { text-decoration: line-through; color: #ccc; font-weight: 400; }
 
-/* --- 6. MID BANNER --- */
+/* --- 6. BADGES & HJÄRTAT (ÅTERSTÄLLDA) --- */
+.favorite-btn {
+  position: absolute;
+  top: 10px; 
+  right: 10px;
+  background: #fff; 
+  border: none; 
+  width: 32px; 
+  height: 32px; 
+  border-radius: 50%;
+  cursor: pointer; 
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.favorite-btn:hover { transform: scale(1.1); }
+
+.sale-badge {
+  position: absolute;
+  top: 10px; 
+  left: 10px;
+  background: #ff4d4d; 
+  color: #fff; 
+  padding: 4px 8px; 
+  font-size: 9px; 
+  font-weight: 800; 
+  z-index: 5;
+}
+
+.product-overlay-soldout {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.6);
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 4;
+}
+.product-overlay-soldout span { 
+  background: #000; 
+  color: #fff; 
+  padding: 5px 10px; 
+  font-size: 10px; 
+  font-weight: 700;
+}
+
+/* --- 7. MID GRID BANNER --- */
 .mid-grid-banner {
   grid-column: 1 / -1;
   width: 100%;
@@ -232,50 +285,107 @@
 }
 
 .mid-banner-inner {
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   background-size: cover;
   background-position: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
-.mid-banner-inner h2 { color: #fff; font-size: 3rem; font-weight: 900; margin-bottom: 20px; }
-.mid-banner-btn { background: #fff; border: none; padding: 15px 40px; font-weight: 900; cursor: pointer; }
-
-/* SOLD OUT & BADGES */
-.product-overlay-soldout {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-}
-.product-overlay-soldout span { background: #000; color: #fff; padding: 5px 10px; font-size: 10px; }
-
-.sale-badge {
-  position: absolute;
-  top: 10px; left: 10px;
-  background: #ff4d4d; color: #fff; padding: 4px 8px; font-size: 9px; font-weight: 800; z-index: 3;
+.mid-banner-inner h2 { 
+  color: #fff; 
+  font-size: 3.5rem; 
+  font-weight: 900; 
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-.favorite-btn {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: #fff; border: none; width: 30px; height: 30px; border-radius: 50%;
-  cursor: pointer; z-index: 3;
+.mid-banner-btn { 
+  background: #fff; 
+  border: none; 
+  padding: 15px 40px; 
+  font-weight: 900; 
+  cursor: pointer; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-/* PAGINATION */
-.pagination { display: flex; justify-content: center; gap: 10px; margin-top: 50px; }
-.page-btn { width: 40px; height: 40px; border: 1px solid #eee; background: #fff; cursor: pointer; }
-.page-btn.active { background: #000; color: #fff; }
+/* --- 8. PAGINATION & NO PRODUCTS --- */
+.pagination { 
+  display: flex; 
+  justify-content: center; 
+  gap: 10px; 
+  margin-top: 50px; 
+  padding-bottom: 50px;
+}
+
+.page-btn { 
+  width: 40px; 
+  height: 40px; 
+  border: 1px solid #eee; 
+  background: #fff; 
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.page-btn.active { 
+  background: #000; 
+  color: #fff; 
+  border-color: #000; 
+}
+
+.no-products-found {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.clear-filters-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* --- 9. MOBILANPASSNING (FIXAD UTAN FAST HEIGHT) --- */
+@media (max-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
+}
 
 @media (max-width: 768px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
-  .promo-quad-grid { grid-template-columns: repeat(2, 1fr); height: 500px; }
   .hero-viewport { height: 40vh; }
+  
+  .promo-quad-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    height: auto; 
+  }
+  
+  .quad-item { aspect-ratio: 1 / 1; }
+
+  .product-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px 10px;
+  }
+
+  /* FIXEN: Tar bort fast höjd och låter bilden skala */
+  .list-image-container { 
+    height: auto; 
+    aspect-ratio: 3 / 4; 
+  }
+
+  .hero-overlay-text h1 { font-size: 2rem; letter-spacing: 4px; }
+  .mid-grid-banner { height: 250px; }
+  .mid-banner-inner h2 { font-size: 2rem; }
+  .product-card-new img { height: auto; }
+}
+
+@media (max-width: 480px) {
+  .hero-viewport { height: 30vh; }
+  .category-grid { grid-template-columns: repeat(2, 1fr); }
 }

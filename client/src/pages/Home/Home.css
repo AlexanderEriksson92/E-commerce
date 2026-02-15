@@ -8,13 +8,13 @@
 .container-fixed {
   max-width: 1400px; 
   margin: 0 auto;
-  padding: 45px 20px; /* Minskad padding från 50px */
+  padding: 45px 20px;
 }
 
 /* HERO */
 .sale-mini-header {
   width: 100%;
-  height: 300px; /* Din önskade höjd */
+  height: 300px;
   background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
               url('https://images.pexels.com/photos/5868272/pexels-photo-5868272.jpeg?auto=compress&w=1600') center/cover no-repeat;
   display: flex;
@@ -44,8 +44,6 @@
   color: #fff;
 }
 
-
-
 .hero-btn-main {
   padding: 18px 45px;
   border-radius: 50px;
@@ -68,8 +66,8 @@
 /* CATEGORY CARDS */
 .gender-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Tvingar 4 kolumner */
-  gap: 10px; /* Lite mer luft mellan korten */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
   margin: 20px 0;
 }
 
@@ -108,29 +106,23 @@
 }
 
 /* --- THE ORIGINALS: MATT FULL-WIDTH --- */
-
 .originals-full-width {
   width: 100%;
   background-color: #1a1a1a;
-  /* Den matta svarta färgen */
-  margin:  0;
+  margin: 0;
   display: flex;
   justify-content: center;
 }
 
-/* Griden inuti din fasta container */
 .originals-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* Dela på mitten */
   min-height: 600px;
   width: 100%;
 }
 
-/* Text-panelen */
 .originals-text-panel {
   padding: 80px 0;
-  /* Ingen padding-left behövs då containern sköter det */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -140,7 +132,6 @@
 .originals-title {
   color: #ffffff;
   font-size: clamp(2.5rem, 5vw, 4rem);
-  /* Skalar snyggt */
   font-weight: 900;
   line-height: 1;
   margin-bottom: 25px;
@@ -149,7 +140,6 @@
 
 .originals-description {
   color: #a0a0a0;
-  /* Matt grå för bättre läsbarhet mot mörk bakgrund */
   font-size: 1.1rem;
   line-height: 1.6;
   max-width: 450px;
@@ -159,7 +149,6 @@
 .originals-btn {
   padding: 16px 45px;
   border-radius: 50px;
-  /* Din önskade rundning */
   border: none;
   background-color: #ffffff;
   color: #1a1a1a;
@@ -177,12 +166,10 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Bild-panelen */
 .originals-image-panel {
   width: 100%;
   height: 100%;
   padding: 60px 0 60px 40px;
-  /* Ger lite luft så bilden inte nuddar texten */
 }
 
 .originals-image-panel img {
@@ -197,8 +184,7 @@
   filter: brightness(1);
 }
 
-
-/* SLIDERS - FIX: Pilarna på rätt plats */
+/* SLIDERS */
 .slider-outer-wrapper {
   width: 100%;
   padding: 0;
@@ -207,7 +193,6 @@
 
 .slider-section-title {
   text-align: left;
-  /* Flytta även titlarna till vänster */
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -252,6 +237,13 @@
   object-fit: cover;
 }
 
+.product-text-box {
+  padding-top: 10px;
+}
+
+.p-name { font-weight: 800; font-size: 12px; margin: 0; }
+.p-price { font-size: 12px; color: #666; }
+
 .nav-arrow {
   position: absolute;
   top: 50%;
@@ -259,7 +251,7 @@
   width: 45px;
   height: 45px;
   background: #fff;
-  border-radius: 0; /* GÖR DEM FYRKANTIGA */
+  border-radius: 0;
   border: 1px solid #eee;
   cursor: pointer;
   z-index: 50;
@@ -269,17 +261,8 @@
   transition: all 0.2s ease;
 }
 
-.nav-arrow:hover {
-  background: #000;
-  color: #fff;
-}
-
-/* Placeras precis innanför kanten */
-.nav-arrow.right {
-  right: 5px;
-}
-
-/* Placeras precis innanför kanten */
+.nav-arrow:hover { background: #000; color: #fff; }
+.nav-arrow.right { right: 5px; }
 
 /* POPUP */
 .member-popup {
@@ -293,105 +276,60 @@
   width: 300px;
 }
 
-.close-popup-btn {
-  float: right;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
+.close-popup-btn { float: right; border: none; background: none; cursor: pointer; }
+.popup-join-btn { width: 100%; padding: 10px; background: #000; color: #fff; border: none; font-weight: bold; margin-top: 15px; }
 
-.popup-join-btn {
-  width: 100%;
-  padding: 10px;
-  background: #000;
-  color: #fff;
-  border: none;
-  font-weight: bold;
-  margin-top: 15px;
-}
-
-/* --- SPORT SECTION --- */
+/* SPORT SECTION */
 .sport-section {
   width: 100%;
   background-color: #ededed;
-  /* Samma matta svarta för enhetlighet, eller prova #151515 för subtil skillnad */
   margin: 120px 0;
   display: flex;
   justify-content: center;
 }
 
-/* Spegelvänd ordningen på desktop */
-.sport-reverse {
-  direction: ltr;
-  /* Standard */
-}
-
-.sport-text originals-title {
-  color: #0c0c0c;
-}
-
-/* Flytta paddingen på bilden till höger sida istället (eftersom den nu är till vänster) */
-.sport-img {
-  padding: 60px 40px 60px 0 !important;
-}
-
-/* Se till att texten i sport-sektionen får lite luft till vänster om bilden */
-.sport-text {
-  padding-left: 40px !important;
-}
-
-.sport-text .originals-title {
-  color: #000000 !important;
-}
-
-/* Ändra även beskrivningen till en mörkare grå/svart så den syns */
-.sport-text .originals-description {
-  color: #333333 !important;
-}
-
-/* Gör knappen svart med vit text för att matcha temat */
-.sport-text .originals-btn {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-}
+.sport-reverse { direction: ltr; }
+.sport-img { padding: 60px 40px 60px 0 !important; }
+.sport-text { padding-left: 40px !important; }
+.sport-text .originals-title { color: #000000 !important; }
+.sport-text .originals-description { color: #333333 !important; }
+.sport-text .originals-btn { background-color: #000000 !important; color: #ffffff !important; }
 
 /* ==========================================================================
    MOBILANPASSNING (768px)
    ========================================================================== */
 @media (max-width: 768px) {
-
-  /* Centrera Hero */
-  .hero-content {
-    text-align: center !important;
-  }
+  .hero-content { text-align: center !important; }
 
   .gender-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2x2 på mobil så det inte blir för trångt */
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  /* Centrera Originals & Sport sektionerna */
+  /* GÖR KATEGORIKORT TILL FYRKANTER */
+  .category-card-main {
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+  }
+
   .originals-grid, .sport-reverse {
     display: flex !important;
-    flex-direction: column !important; /* Stapla text över bild */
+    flex-direction: column !important;
     align-items: center !important;
     text-align: center !important;
   }
 
-  /* Centrera textpanelerna och deras innehåll */
   .originals-text-panel, .sport-text {
     padding: 40px 20px !important;
-    align-items: center !important; /* Centrerar flex-barn (knappar/titlar) */
+    align-items: center !important;
     width: 100% !important;
   }
 
-  /* Fixa beskrivningen så den inte "hänger" till vänster */
   .originals-description {
     margin: 0 auto 30px auto !important;
     text-align: center !important;
     max-width: 100% !important;
   }
 
-  /* Centrera knappar */
   .originals-btn, .hero-btn-main {
     display: inline-block !important;
     margin: 0 auto !important;
@@ -399,24 +337,24 @@
     min-width: 200px;
   }
 
-  /* Bilderna: Se till att de inte har konstig padding på mobil */
   .originals-image-panel, .sport-img {
     padding: 20px !important;
     height: 350px !important;
     width: 100% !important;
-    order: 2; /* Lägger bilden under texten */
+    order: 2;
   }
 
-  .originals-image-panel img, .sport-img img {
-    border-radius: 8px;
-  }
+  .originals-image-panel img, .sport-img img { border-radius: 8px; }
 
-  /* Slider-justering */
+  /* SLIDER FIX: Ta bort fast height på img-container och fixa proportioner */
   .product-card-new {
-    flex: 0 0 80%; /* Visa lite av nästa kort */
+    flex: 0 0 80%;
   }
 
-  .nav-arrow {
-    display: none !important; /* Swipe är bättre på mobil */
+  .product-img-container {
+    height: auto !important;
+    aspect-ratio: 3 / 4;
   }
+
+  .nav-arrow { display: none !important; }
 }
