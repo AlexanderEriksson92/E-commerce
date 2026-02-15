@@ -11,14 +11,14 @@ Här ser du den fullständiga vyn av butiken och dess administrativa gränssnitt
 
 | Home Screen | Product List | Product Detail |
 | :---: | :---: | :---: |
-| ![Home Screen](./screenshots/E-commerceHomeScreen.png) | ![List Screen](./screenshots/E-commerceListScreen.png) | ![Product Screen](./screenshots/E-commerceProductScreen.png) |
+| ![Home Screen](screenshots/E-commerceHomeScreen.png) | ![List Screen](screenshots/E-commerceListScreen.png) | ![Product Screen](screenshots/E-commerceProductScreen.png) |
 
 ### Admin & Mobile
 Full kontroll över lagret och en optimerad upplevelse för mindre skärmar.
 
 | Admin Dashboard | Mobile Layout | Mobile Profile |
 | :---: | :---: | :---: |
-| ![Admin Screen](./screenshots/E-commerceAdminScreen.png) | ![Mobile Screen](./screenshots/E-commerceMobileScreen.png) | ![Mobile Profile](./screenshots/E-commerceMobileProfileScreen.png) |
+| ![Admin Screen](screenshots/E-commerceAdminScreen.png) | ![Mobile Screen](screenshots/E-commerceMobileScreen.png) | ![Mobile Profile](screenshots/E-commerceMobileProfileScreen.png) |
 
 ---
 
