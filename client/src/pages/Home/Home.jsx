@@ -82,20 +82,35 @@ function Home() {
         </div>
       )}
 
-      <header className="hero-header">
-        <div className="hero-content">
-          <h1 className="hero-title-main">NEW ARRIVALS</h1>
-          <button className="hero-btn-main" onClick={() => navigate('/products')}>SHOP THE COLLECTION</button>
+      {/* NY SLIMMAD REA-HEADER (Ersätter gamla hero-header) */}
+      <header className="sale-mini-header" onClick={() => navigate('/products?sale=true')}>
+        <div className="sale-header-content">
+          <h2 className="sale-title-mini">SEASON SALE</h2>
+          <p className="sale-subtitle">UP TO 50% OFF — SHOP THE COLLECTION</p>
         </div>
       </header>
 
       <div className="container-fixed">
+        {/* GRID MED 4 KORT (Men, Women, Kids, Sport) */}
         <div className="gender-grid">
-          {['Men', 'Women', 'Kids'].map((gender) => {
-            const imgId = gender === 'Men' ? '1183266' : gender === 'Women' ? '1926769' : '1619697';
+          {['Men', 'Women', 'Kids', 'Sport'].map((gender) => {
+            const imgMap = {
+              Men: '1183266',
+              Women: '1926769',
+              Kids: '1619697',
+              Sport: '3760259'
+            };
+            const imgId = imgMap[gender];
+            
             return (
-              <div key={gender} className="category-card-main" onClick={() => navigate('/products', { state: { gender } })}>
-                <div className="category-bg-img" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('https://images.pexels.com/photos/${imgId}/pexels-photo-${imgId}.jpeg?w=800')` }}></div>
+              <div 
+                key={gender} 
+                className="category-card-main" 
+                onClick={() => navigate('/products', { 
+                  state: { gender: gender === 'Sport' ? 'Sport' : gender } 
+                })}
+              >
+                <div className="category-bg-img" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3)), url('https://images.pexels.com/photos/${imgId}/pexels-photo-${imgId}.jpeg?w=800')` }}></div>
                 <div className="category-card-overlay">
                   <h3 className="category-text-style">{gender.toUpperCase()}</h3>
                   <span className="explore-link">EXPLORE</span>
@@ -109,72 +124,49 @@ function Home() {
       {/* 1. Latest Drops Slider */}
       <ProductSlider title="LATEST DROPS" products={latestProducts} bgColor="#f4f4f2" />
 
-      {/* 2. THE ORIGINALS - MATT FULL-WIDTH SECTION */}
+      {/* 2. THE ORIGINALS */}
       <section className="originals-full-width">
         <div className="container-fixed">
           <div className="originals-grid">
-
-            {/* Vänster sida: Text */}
             <div className="originals-text-panel">
               <h2 className="originals-title">THE ORIGINALS</h2>
               <p className="originals-description">
                 Experience the perfect blend of heritage and modern design.
-                Our signature collection features timeless essentials crafted
-                for those who value quality over trends.
+                Our signature collection features timeless essentials.
               </p>
               <button className="originals-btn" onClick={() => navigate('/products')}>
                 VIEW COLLECTION
               </button>
             </div>
-
-            {/* Höger sida: Bild */}
             <div className="originals-image-panel">
-              <img
-                src="https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&w=1000"
-                alt="The Originals Collection"
-              />
+              <img src="https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&w=1000" alt="The Originals" />
             </div>
-
           </div>
         </div>
       </section>
-
 
       {/* 3. Steal The Look Slider */}
       <ProductSlider title="STEAL THE LOOK" products={popularProducts} bgColor="#dad5ce" />
 
-      {/* 4. SPORT SECTION - SPEGELVÄND LAYOUT */}
+      {/* 4. SPORT SECTION */}
       <section className="sport-section">
         <div className="container-fixed">
-          <div className="originals-grid sport-reverse"> {/* Vi återanvänder grid-logiken men lägger till en reverse-klass */}
-
-            {/* Vänster sida: Bild */}
+          <div className="originals-grid sport-reverse">
             <div className="originals-image-panel sport-img">
-              <img
-                src="https://images.pexels.com/photos/3760259/pexels-photo-3760259.jpeg?auto=compress&w=1000"
-                alt="Sport Collection"
-              />
+              <img src="https://images.pexels.com/photos/3760259/pexels-photo-3760259.jpeg?auto=compress&w=1000" alt="Sport Collection" />
             </div>
-
-            {/* Höger sida: Text */}
             <div className="originals-text-panel sport-text">
               <h2 className="originals-title">PERFORMANCE TECH</h2>
               <p className="originals-description">
-                Push your limits with our new athletic range. Engineered for
-                breathability and movement, designed to keep you at the top of your game.
+                Push your limits with our new athletic range. Engineered for breathability and movement.
               </p>
-              <button
-                className="originals-btn"
-                onClick={() => navigate('/products?department=Sport')}
-              >
+              <button className="originals-btn" onClick={() => navigate('/products?department=Sport')}>
                 EXPLORE SPORT
               </button>
             </div>
-
           </div>
         </div>
       </section>
-
     </div>
   );
 }

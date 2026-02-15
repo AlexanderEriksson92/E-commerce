@@ -15,24 +15,30 @@ function AddProduct() {
   const [material, setMaterial] = useState('');
   const [isSportswear, setIsSportswear] = useState(false);
 
-  // Bild-hantering: Fil eller URL
-  const [imageSource, setImageSource] = useState('file'); // 'file' eller 'url'
+  const [imageSource, setImageSource] = useState('file');
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
 
-  // Inventory med fixad layout-state
   const [inventory, setInventory] = useState({
     "XS": 0, "S": 0, "M": 0, "L": 0, "XL": 0
   });
 
   const [availableBrands, setAvailableBrands] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableMaterials, setAvailableMaterials] = useState([]);
+
   const [showAddBrand, setShowAddBrand] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [showAddColor, setShowAddColor] = useState(false);
+  const [newColorName, setNewColorName] = useState('');
+  const [showAddMaterial, setShowAddMaterial] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState('');
 
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchFilters();
@@ -40,18 +46,22 @@ function AddProduct() {
 
   const fetchFilters = async () => {
     try {
-      const bRes = await fetch(`${API_URL}/api/admin/brands`);
-      const cRes = await fetch(`${API_URL}/api/admin/categories`);
+      const [bRes, cRes, colRes, matRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/brands`),
+        fetch(`${API_URL}/api/admin/categories`),
+        fetch(`${API_URL}/api/admin/colors`),
+        fetch(`${API_URL}/api/admin/materials`)
+      ]);
+      
       if (bRes.ok) setAvailableBrands(await bRes.json());
       if (cRes.ok) setAvailableCategories(await cRes.json());
-    } catch (err) { console.error(err); }
+      if (colRes.ok) setAvailableColors(await colRes.json());
+      if (matRes.ok) setAvailableMaterials(await matRes.json());
+    } catch (err) { console.error("Error fetching filters:", err); }
   };
 
   const handleInventoryChange = (size, value) => {
-    setInventory(prev => ({
-      ...prev,
-      [size]: parseInt(value) || 0
-    }));
+    setInventory(prev => ({ ...prev, [size]: parseInt(value) || 0 }));
   };
 
   const handleQuickAdd = async (type, value, setter, toggle) => {
@@ -61,7 +71,7 @@ function AddProduct() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': localStorage.getItem('token')
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ name: value })
       });
@@ -70,7 +80,7 @@ function AddProduct() {
         setter('');
         toggle(false);
       }
-    } catch (err) { alert("Serverfel"); }
+    } catch (err) { alert("Server error"); }
   };
 
   const handleSubmit = async (e) => {
@@ -81,44 +91,44 @@ function AddProduct() {
     formData.append('description', description);
     formData.append('department', department);
     formData.append('inventory', JSON.stringify(inventory));
-    formData.append('color', color);
-    formData.append('material', material);
     formData.append('isSportswear', isSportswear);
     if (discountPrice) formData.append('discountPrice', discountPrice);
 
     const selectedCat = availableCategories.find(c => c.name === category);
     const selectedBrand = availableBrands.find(b => b.name === brand);
+    const selectedColor = availableColors.find(c => c.name === color);
+    const selectedMaterial = availableMaterials.find(m => m.name === material);
+
     if (selectedCat) formData.append('categoryId', selectedCat.id);
     if (selectedBrand) formData.append('brandId', selectedBrand.id);
+    if (selectedColor) formData.append('color', selectedColor.name); 
+    if (selectedMaterial) formData.append('materialId', selectedMaterial.id);
 
-    // Hantera bildval
     if (imageSource === 'file' && imageFile) {
       formData.append('imageFile', imageFile);
     } else if (imageSource === 'url' && imageUrl) {
       formData.append('imageUrl', imageUrl);
     } else {
-      alert("Vänligen välj en bild eller ange en länk.");
+      alert("Please select an image.");
       return;
     }
 
     const response = await fetch(`${API_URL}/api/products`, {
       method: 'POST',
-      headers: { 'Authorization': localStorage.getItem('token') },
+      headers: { 'Authorization': `Bearer ${token}` },
       body: formData,
     });
 
     if (response.ok) {
-      alert('Produkt tillagd!');
+      alert('Product added successfully!');
       navigate('/admin/products');
     }
   };
 
   return (
     <div className="reg-page-container">
-      <div className="reg-form-card" style={{ maxWidth: '800px' }}>
-        <h2 style={{ letterSpacing: '2px', fontWeight: '900', textTransform: 'uppercase', fontSize: '18px' }}>
-          Add New Product
-        </h2>
+      <div className="reg-form-card">
+        <h2 className="reg-form-title">Add New Product</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="reg-form-group">
@@ -137,21 +147,16 @@ function AddProduct() {
             </div>
           </div>
 
-          {/* INVENTORY SECTION - FIXAD LAYOUT */}
-          <div style={{ background: '#f8f8f8', padding: '20px', borderRadius: '15px', marginBottom: '25px', border: '1px solid #eee' }}>
-            <label style={{ fontWeight: '900', fontSize: '10px', letterSpacing: '1px', display: 'block', marginBottom: '15px', color: '#666' }}>
-              STOCK LEVELS PER SIZE
-            </label>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          <div className="inventory-section">
+            <label className="section-label">STOCK LEVELS PER SIZE</label>
+            <div className="inventory-grid">
               {Object.keys(inventory).map(size => (
-                <div key={size} style={{ textAlign: 'center', flex: '1 1 60px', minWidth: '60px' }}>
-                  <label style={{ fontSize: '10px', fontWeight: '700', display: 'block' }}>{size}</label>
+                <div key={size} className="inventory-item">
+                  <label>{size}</label>
                   <input
-                    type="number"
-                    min="0"
-                    value={inventory[size]}
+                    type="number" min="0" value={inventory[size]}
                     onChange={(e) => handleInventoryChange(size, e.target.value)}
-                    style={{ textAlign: 'center', padding: '8px 0', marginTop: '5px', width: '100%', borderRadius: '8px', border: '1px solid #ddd' }}
+                    className="inventory-input"
                   />
                 </div>
               ))}
@@ -161,7 +166,7 @@ function AddProduct() {
           <div className="reg-form-row">
             <div className="reg-form-group">
               <label>Department</label>
-              <select value={department} onChange={(e) => setDepartment(e.target.value)} style={selectStyle}>
+              <select value={department} onChange={(e) => setDepartment(e.target.value)} className="reg-select">
                 <option value="Men">Men</option>
                 <option value="Women">Women</option>
                 <option value="Kids">Kids</option>
@@ -171,112 +176,118 @@ function AddProduct() {
 
             <div className="reg-form-group">
               <label>Brand</label>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <select value={brand} onChange={(e) => setBrand(e.target.value)} required style={{ ...selectStyle, flex: 1 }}>
+              <div className="quick-add-wrapper">
+                <select value={brand} onChange={(e) => setBrand(e.target.value)} required className="reg-select">
                   <option value="">Select...</option>
                   {availableBrands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
                 </select>
-                <button type="button" className="reg-btn-primary" style={{ width: '45px', padding: '0' }} onClick={() => setShowAddBrand(!showAddBrand)}>
+                <button type="button" className="plus-btn" onClick={() => setShowAddBrand(!showAddBrand)}>
                   {showAddBrand ? '✕' : '+'}
                 </button>
               </div>
             </div>
           </div>
-
           {showAddBrand && (
-            <div style={quickAddBox}>
-              <input type="text" placeholder="New Brand..." value={newBrandName} onChange={e => setNewBrandName(e.target.value)} style={{ flex: 1, padding: '8px' }} />
-              <button type="button" onClick={() => handleQuickAdd('brands', newBrandName, setNewBrandName, setShowAddBrand)} style={{ padding: '8px 15px' }}>Save</button>
+            <div className="quick-add-box">
+              <input type="text" placeholder="New Brand..." value={newBrandName} onChange={e => setNewBrandName(e.target.value)} />
+              <button type="button" onClick={() => handleQuickAdd('brands', newBrandName, setNewBrandName, setShowAddBrand)}>Save</button>
             </div>
           )}
+
           <div className="reg-form-row">
             <div className="reg-form-group">
               <label>Color</label>
-              <input type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="e.g. Navy Blue" />
+              <div className="quick-add-wrapper">
+                <select value={color} onChange={(e) => setColor(e.target.value)} required className="reg-select">
+                  <option value="">Select...</option>
+                  {availableColors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+                <button type="button" className="plus-btn" onClick={() => setShowAddColor(!showAddColor)}>
+                  {showAddColor ? '✕' : '+'}
+                </button>
+              </div>
             </div>
+
             <div className="reg-form-group">
               <label>Material</label>
-              <input type="text" value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="e.g. 100% Wool" />
+              <div className="quick-add-wrapper">
+                <select value={material} onChange={(e) => setMaterial(e.target.value)} required className="reg-select">
+                  <option value="">Select...</option>
+                  {availableMaterials.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
+                </select>
+                <button type="button" className="plus-btn" onClick={() => setShowAddMaterial(!showAddMaterial)}>
+                  {showAddMaterial ? '✕' : '+'}
+                </button>
+              </div>
             </div>
           </div>
+          {showAddColor && (
+            <div className="quick-add-box">
+              <input type="text" placeholder="New Color..." value={newColorName} onChange={e => setNewColorName(e.target.value)} />
+              <button type="button" onClick={() => handleQuickAdd('colors', newColorName, setNewColorName, setShowAddColor)}>Save</button>
+            </div>
+          )}
+          {showAddMaterial && (
+            <div className="quick-add-box">
+              <input type="text" placeholder="New Material..." value={newMaterialName} onChange={e => setNewMaterialName(e.target.value)} />
+              <button type="button" onClick={() => handleQuickAdd('materials', newMaterialName, setNewMaterialName, setShowAddMaterial)}>Save</button>
+            </div>
+          )}
 
-          <div className="reg-form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <input
-              type="checkbox"
-              checked={isSportswear}
-              onChange={(e) => setIsSportswear(e.target.checked)}
-              style={{ width: '20px', height: '20px', cursor: 'pointer' }}
-            />
-            <label style={{ marginBottom: 0 }}>Mark as Sportswear / Träningskläder</label>
+          <div className="sportswear-toggle">
+            <input type="checkbox" checked={isSportswear} onChange={(e) => setIsSportswear(e.target.checked)} />
+            <label>Mark as Sportswear</label>
           </div>
+
           <div className="reg-form-group">
             <label>Category</label>
-            <div style={{ display: 'flex', gap: '5px' }}>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} required style={{ ...selectStyle, flex: 1 }}>
+            <div className="quick-add-wrapper">
+              <select value={category} onChange={(e) => setCategory(e.target.value)} required className="reg-select">
                 <option value="">Select Category...</option>
                 {availableCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
-              <button type="button" className="reg-btn-primary" style={{ width: '45px', padding: '0' }} onClick={() => setShowAddCategory(!showAddCategory)}>
+              <button type="button" className="plus-btn" onClick={() => setShowAddCategory(!showAddCategory)}>
                 {showAddCategory ? '✕' : '+'}
               </button>
             </div>
           </div>
-
           {showAddCategory && (
-            <div style={quickAddBox}>
-              <input type="text" placeholder="New Category..." value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} style={{ flex: 1, padding: '8px' }} />
-              <button type="button" onClick={() => handleQuickAdd('categories', newCategoryName, setNewCategoryName, setShowAddCategory)} style={{ padding: '8px 15px' }}>Save</button>
+            <div className="quick-add-box">
+              <input type="text" placeholder="New Category..." value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} />
+              <button type="button" onClick={() => handleQuickAdd('categories', newCategoryName, setNewCategoryName, setShowAddCategory)}>Save</button>
             </div>
           )}
 
           <div className="reg-form-group">
             <label>Description</label>
-            <textarea rows="3" value={description} onChange={(e) => setDescription(e.target.value)} required style={{ padding: '12px', borderRadius: '10px', border: '1px solid #ddd', width: '100%' }} />
+            <textarea rows="3" value={description} onChange={(e) => setDescription(e.target.value)} required className="reg-textarea" />
           </div>
 
-          {/* BILDHANTERING SEKTION */}
-          <div style={{ background: '#f0f4f8', padding: '20px', borderRadius: '15px', marginBottom: '25px' }}>
-            <label style={{ fontWeight: '900', fontSize: '10px', display: 'block', marginBottom: '10px' }}>PRODUCT IMAGE</label>
-
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
-              <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                <input type="radio" checked={imageSource === 'file'} onChange={() => setImageSource('file')} /> Upload File
-              </label>
-              <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                <input type="radio" checked={imageSource === 'url'} onChange={() => setImageSource('url')} /> Image URL
-              </label>
+          <div className="image-upload-section">
+            <label className="section-label">PRODUCT IMAGE</label>
+            <div className="image-source-toggles">
+              <label className="radio-label"><input type="radio" checked={imageSource === 'file'} onChange={() => setImageSource('file')} /> Upload File</label>
+              <label className="radio-label"><input type="radio" checked={imageSource === 'url'} onChange={() => setImageSource('url')} /> Image URL</label>
             </div>
 
             {imageSource === 'file' ? (
-              <input type="file" onChange={(e) => setImageFile(e.target.files[0])} />
+              <input type="file" onChange={(e) => setImageFile(e.target.files[0])} className="file-input" />
             ) : (
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
-              />
+              <input type="text" placeholder="https://example.com/image.jpg" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="url-input" />
             )}
 
-            {/* Preview av bilden */}
             {(imageUrl && imageSource === 'url') && (
-              <div style={{ marginTop: '10px' }}>
-                <img src={imageUrl} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} onError={(e) => e.target.src = 'https://placehold.co/80x80?text=Invalid+URL'} />
+              <div className="image-preview">
+                <img src={imageUrl} alt="Preview" onError={(e) => e.target.src = 'https://placehold.co/80x80?text=Invalid+URL'} />
               </div>
             )}
           </div>
 
-          <button type="submit" className="reg-btn-primary" style={{ width: '100%', padding: '15px', fontWeight: '900', fontSize: '14px' }}>
-            PUBLISH PRODUCT
-          </button>
+          <button type="submit" className="publish-btn">PUBLISH PRODUCT</button>
         </form>
       </div>
     </div>
   );
 }
-
-const selectStyle = { padding: '12px', borderRadius: '10px', border: '1px solid #ddd', background: '#fff', width: '100%' };
-const quickAddBox = { display: 'flex', gap: '5px', background: '#eee', padding: '10px', borderRadius: '10px', marginBottom: '15px' };
 
 export default AddProduct;
